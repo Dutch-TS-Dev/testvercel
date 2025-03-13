@@ -1,0 +1,1 @@
+const getNewRankings = (team: Team[]) => {};
