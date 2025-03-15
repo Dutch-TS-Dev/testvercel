@@ -4,47 +4,50 @@ import { writeFileSync } from "fs";
 import { OpenAI } from "openai";
 dotenv.config({ path: path.resolve(__dirname, "../.env.local") });
 
-export const getGPTContactURLs = async (
-  content: string
-): Promise<{ most_likely_email_url: string } | undefined> => {
+const results = [
+  ["8sd9dgg98", "8sd9deeegg98", "11-0, 11-0"],
+  [
+    "14b726fc-a953-47aa-807e-3955f233cd81",
+    "0cd2a46c-d388-44d6-9427-0d5429dcb720",
+    "11-9, 8-11, 11-9",
+  ],
+  [
+    "0721a11f-8001-4a07-8ea0-27c8539e2b04",
+    "992aef8e-b37a-480a-9c30-aa502e2bd3db",
+    "11-0, 11-0",
+  ],
+];
+
+const stringify = JSON.stringify(results);
+
+console.log("logged: stringify", stringify);
+
+const getNewMatches = async () => {
+  const prompt = `
+I have a sportsladder that manages pickleball matches. the first round players were assigned at random, of which I will give you the match results. also, the first 2 arr elements
+are players id's in each array. please generate a new array of matches in such a way that players get opponents as close to their level as possible. dont make up new user id's. 
+please just use the ones that are given here (1st and 2nd element in each inner arr):
+${stringify}
+pls return json object with 2 keys: a new 2d array with matches on key "matches". 1 element in that array could look like:
+  ["USER_ID1", "USER_ID2"],
+ and  a key "explanation"
+that explains why you assigned players in the way that you did.
+`;
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
   try {
-    // const apiKey = process.env.OPENAI_API_KEY;
-    // const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     Authorization: `Bearer ${apiKey}`,
-    //   },
-    //   body: JSON.stringify({
-    //     model: "gpt-4",
-    //     messages: [
-    //       { role: "system", content: "You are a website analyst." },
-    //       {
-    //         role: "user",
-    //         content: `Here is a list of URLs of a website: ${content}. Give me back the most likely URL to hold an email address. Respond in JSON format.`,
-    //       },
-    //       response_format: { type: 'json_object' }
-
-    //     ],
-    //   }),
-    // });
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
     const completion = await openai.chat.completions.create({
       messages: [
         {
           role: "user",
-          content: `test, can you answer? json`,
+          content: prompt,
         },
       ],
-      model: "gpt-3.5-turbo",
+      model: "gpt-4-turbo",
       temperature: 0.1,
-      // Assuming response_format needs to be an object with 'type' key based on your original code
 
-      //
       response_format: { type: "json_object" },
     });
     console.log(
@@ -57,3 +60,10 @@ export const getGPTContactURLs = async (
     return undefined;
   }
 };
+
+const test = async () => {
+  const matches = await getNewMatches();
+
+  console.log("logged: matches", matches);
+};
+test();

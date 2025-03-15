@@ -23,8 +23,8 @@ export type Match = {
   id: string;
   type: MATCH_TYPE;
   winner?: 1 | 2;
-  participant1ID: string;
-  participant2ID: string;
+  participant1_ID: string;
+  participant2_ID: string;
   reporter: 1 | 2;
   score: string; // 11-2-11-3-
   date: Date;
@@ -64,20 +64,6 @@ const generateRound = (
   const matches: Match[] = [];
   const participantIds = participants.map((p) => p.id);
   const numMatches = Math.floor(participantIds.length / 2);
-
-  // for (let i = 0; i < numMatches; i++) {
-  //   const match: Match = {
-  //     id: uuid(),
-  //     type: matchType,
-  //     participant1ID: participantIds[i * 2],
-  //     participant2ID: participantIds[i * 2 + 1],
-  //     reporter: 1, // Placeholder, should be determined by match result
-  //     score: "", // Placeholder, should be updated with actual score
-  //     date: new Date(startDate + i * 24 * 60 * 60 * 1000), // Spread matches over the week
-  //     location: `Court ${i + 1}`, // Placeholder, should be updated with actual location
-  //   };
-  //   matches.push(match);
-  // }
 
   const testGPTFrage = "hallo";
 
