@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.6.0",
+    "dotenv": "^16.4.7",
     "next": "15.2.2",
+    "openai": "^4.87.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
