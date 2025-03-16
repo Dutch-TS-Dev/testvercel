@@ -37,9 +37,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-
-        <Script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js" />
-        <Script src="/script.js" />
       </body>
     </html>
   );

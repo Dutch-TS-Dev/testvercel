@@ -1,84 +1,327 @@
-import React from "react";
+"use client";
+
+import Link from "next/link";
+import React, { useEffect } from "react";
+import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
+
+// Define types
+interface DatetimeState {
+  day: string;
+  date: string;
+  time: string;
+}
+
+interface AppState {
+  activeHtml: string;
+  pageTitle: string;
+  sidebarActive: boolean;
+  navActive: boolean;
+  searchVisible: boolean;
+  searchQuery: string;
+  datetime: DatetimeState;
+}
+
+// Jotai atoms
+const datetimeAtom = atom<DatetimeState>({
+  day: "",
+  date: "",
+  time: "",
+});
+
+const activeHtmlAtom = atom<string>("welcome");
+const pageTitleAtom = atom<string>("Home");
+const sidebarActiveAtom = atom<boolean>(false);
+const navActiveAtom = atom<boolean>(false);
+const searchVisibleAtom = atom<boolean>(false);
+const searchQueryAtom = atom<string>("");
+
+// Function to update date and time
+const updateDatetime = () => {
+  const days = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const dayIndex = now.getDay();
+  const monthIndex = now.getMonth();
+  let date = now.getDate();
+  date = date < 10 ? Number(`0${date}`) : date;
+
+  let hours = now.getHours();
+  let minutes = now.getMinutes();
+  let seconds = now.getSeconds();
+
+  let period = "AM";
+  if (hours >= 12) {
+    period = "PM";
+  }
+
+  if (hours > 12) {
+    hours -= 12;
+  } else if (hours === 0) {
+    hours = 12;
+  }
+
+  const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
+  const secondsStr = seconds < 10 ? `0${seconds}` : seconds;
+
+  return {
+    day: days[dayIndex],
+    date: `${months[monthIndex]} ${date}, ${year}`,
+    time: `${hours}:${minutesStr}:${secondsStr} ${period}`,
+  };
+};
 
 const Home = () => {
+  // Jotai state hooks
+  const [datetime, setDatetime] = useAtom(datetimeAtom);
+  const [activeHtml, setActiveHtml] = useAtom(activeHtmlAtom);
+  const [pageTitle, setPageTitle] = useAtom(pageTitleAtom);
+  const [sidebarActive, setSidebarActive] = useAtom(sidebarActiveAtom);
+  const [navActive, setNavActive] = useAtom(navActiveAtom);
+  const [searchVisible, setSearchVisible] = useAtom(searchVisibleAtom);
+  const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+
+  // Initialize and update datetime
+  useEffect(() => {
+    // Initial datetime update
+    setDatetime(updateDatetime());
+
+    // Set up interval for clock
+    const intervalId = setInterval(() => {
+      setDatetime(updateDatetime());
+    }, 1000);
+
+    // Clean up interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [setDatetime]);
+
+  // Event handlers
+  const toggleSidebar = () => {
+    setSidebarActive(!sidebarActive);
+    setNavActive(false);
+  };
+
+  const handleNavItemClick = (pageName: string, title: string) => {
+    setActiveHtml(pageName || "welcome");
+    setPageTitle(title);
+    setNavActive(!navActive);
+  };
+
+  const handleSideNavClick = (pageName: string, title: string) => {
+    setSidebarActive(false);
+    setActiveHtml(pageName || "welcome");
+    setPageTitle(title);
+  };
+
+  const toggleSearch = () => {
+    setNavActive(false);
+    setSearchVisible(!searchVisible);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (searchQuery !== "" && searchQuery !== null) {
+      // Perform search
+      setSearchVisible(false);
+      setActiveHtml("search");
+      setPageTitle("Result");
+
+      // Update the search key element
+      const keyElement = document.querySelector(".html.search .key");
+      if (keyElement) {
+        keyElement.innerHTML = searchQuery;
+      }
+
+      setSearchQuery("");
+    } else {
+      // Just toggle search visibility
+      setNavActive(false);
+      const searchInput = document.querySelector(".header .search input");
+      if (searchInput) {
+        (searchInput as HTMLElement).focus();
+      }
+      setSearchVisible(!searchVisible);
+    }
+  };
+
+  const toggleNav = () => {
+    setNavActive(!navActive);
+  };
+
   return (
     <div className="mobile-wrap">
       <div className="mobile clearfix">
         <div className="header">
-          <span className="ion-ios-navicon pull-left">
+          <span className="ion-ios-navicon pull-left" onClick={toggleSidebar}>
             <i></i>
           </span>
-          <span className="title">Home</span>
-          <span className="ion-ios-search pull-right"></span>
+          <span className="title">{pageTitle}</span>
+          <span
+            className="ion-ios-search pull-right"
+            onClick={toggleSearch}
+          ></span>
           <div className="search">
-            <form method="post">
-              <input type="search" placeholder="Search Here" />
+            <form method="post" onSubmit={handleSearch}>
+              <input
+                type="search"
+                placeholder="Search Here"
+                className={searchVisible ? "search-visible" : ""}
+                value={searchQuery}
+                onChange={handleSearchChange}
+              />
             </form>
           </div>
         </div>
-        <div className="sidebar">
-          <div className="sidebar-overlay"></div>
+        <div className={`sidebar ${sidebarActive ? "active" : ""}`}>
+          <div
+            className={`sidebar-overlay ${
+              sidebarActive ? "fadeIn animated" : "fadeOut animated"
+            }`}
+            onClick={toggleSidebar}
+          ></div>
           <div className="sidebar-content">
             <div className="top-head">
               <div className="name">Mohan Khadka</div>
               <div className="email">contact@mohankhadka.com.np</div>
             </div>
             <div className="nav-left">
-              <a href="#home">
+              <a
+                href="#home"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("welcome", "Home");
+                }}
+              >
                 <span className="ion-ios-home-outline"></span> Home
               </a>
-              <a href="#alarm">
+              <a
+                href="#alarm"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("alarm", "Alarm");
+                }}
+              >
                 <span className="ion-ios-list-outline"></span> Alarm
               </a>
-              <a href="#compose">
+              <a
+                href="#compose"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("compose", "Compose");
+                }}
+              >
                 <span className="ion-ios-compose-outline"></span> Compose
               </a>
-              <a href="#chats">
+              <a
+                href="#chats"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("chats", "Chats");
+                }}
+              >
                 <span className="ion-ios-chatboxes-outline"></span> Chats
               </a>
-              <a href="#profile">
+              <a
+                href="#profile"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("profile", "Profile");
+                }}
+              >
                 <span className="ion-ios-person-outline"></span> Profile
               </a>
-              <a href="#settings">
+              <a
+                href="#settings"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("settings", "Settings");
+                }}
+              >
                 <span className="ion-ios-gear-outline"></span> Settings
               </a>
-              <a href="#credits">
+              <a
+                href="#credits"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("credits", "Credits");
+                }}
+              >
                 <span className="ion-ios-information-outline"></span> Credits
               </a>
+              <a
+                href="#credits"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("credits", "Credits");
+                }}
+              >
+                <span className="ion-ios-user-outline"></span> Credits
+              </a>
+              {/* <Link href="/register">
+                <span className="ion-ios-information-outline"></span> Register
+              </Link> */}
             </div>
           </div>
         </div>
         <div className="content">
-          <div className="html search">
+          <div
+            className={`html search ${
+              activeHtml === "search" ? "visible" : ""
+            }`}
+          >
             <div className="title bounceInDown animated">Search Result</div>
             <p className="flipInX animated">
               Sorry,
               <br />
-              no matches found for <b className="key"></b>
+              no matches found for <b className="key">{searchQuery}</b>
             </p>
           </div>
-          <div className="html welcome visible">
+          <div
+            className={`html welcome ${
+              activeHtml === "welcome" ? "visible" : ""
+            }`}
+          >
             <div className="datetime">
-              <div className="day lightSpeedIn animated">
-                Bangkok Pickleball
-              </div>
-              <div className="date lightSpeedIn animated">June 18, 2015</div>
-              <div className="time lightSpeedIn animated">08:00 AM</div>
+              <div className="day lightSpeedIn animated">Pickleball Ladder</div>
+              <div className="date lightSpeedIn animated">{datetime.date}</div>
+              <div className="time lightSpeedIn animated">{datetime.time}</div>
             </div>
           </div>
-          <div className="html welcome visible">
-            <div className="datetime">
-              <div className="day lightSpeedIn animated">Weekly winners</div>
-              <div className="date lightSpeedIn animated">1. Team Kingkong</div>
-              <div className="date lightSpeedIn animated">2. Team Tiger</div>
-              <div className="time lightSpeedIn animated">08:00 AM</div>
-            </div>
-          </div>
-          <div className="html alarm">
+          <div
+            className={`html alarm ${activeHtml === "alarm" ? "visible" : ""}`}
+          >
             <div className="forecast clearfix">
               <div className="datetime pull-left bounceInLeft animated">
-                <div className="day">Thursday</div>
-                <div className="date">June 18, 2015</div>
+                <div className="day">{datetime.day}</div>
+                <div className="date">{datetime.date}</div>
               </div>
               <div className="temperature pull-right bounceInRight animated">
                 <div className="unit">
@@ -131,7 +374,11 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="html compose">
+          <div
+            className={`html compose ${
+              activeHtml === "compose" ? "visible" : ""
+            }`}
+          >
             <div className="forms">
               <div className="group clearfix slideInRight animated">
                 <label className="pull-left" htmlFor="compose-time">
@@ -166,7 +413,9 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="html chats">
+          <div
+            className={`html chats ${activeHtml === "chats" ? "visible" : ""}`}
+          >
             <div className="tabs-list clearfix">
               <a href="#" className="tab active">
                 Users
@@ -201,6 +450,30 @@ const Home = () => {
                 </div>
                 <div className="idle pull-right">
                   <span className="offline"></span>
+                </div>
+              </div>
+              <div className="user clearfix rotateInDownLeft animated">
+                <div className="photo pull-left">
+                  <i className="ion-trophy"></i>
+                </div>
+                <div className="desc pull-left">
+                  <p className="name">Winner</p>
+                  <p className="position">Number 1</p>
+                </div>
+                <div className="idle pull-right">
+                  <span className="online"></span>
+                </div>
+              </div>
+              <div className="user clearfix rotateInDownLeft animated">
+                <div className="photo pull-left">
+                  <i className="ion-medal"></i>
+                </div>
+                <div className="desc pull-left">
+                  <p className="name">2nd Winner</p>
+                  <p className="position">Number 1</p>
+                </div>
+                <div className="idle pull-right">
+                  <span className="online"></span>
                 </div>
               </div>
               <div className="user clearfix rotateInDownLeft animated">
@@ -253,7 +526,11 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="html settings">
+          <div
+            className={`html settings ${
+              activeHtml === "settings" ? "visible" : ""
+            }`}
+          >
             <div className="setting-list">
               <div className="gear clearfix slideInRight animated">
                 <div className="title pull-left">General</div>
@@ -275,12 +552,7 @@ const Home = () => {
                   <label htmlFor="gear-sound">Sound</label>
                 </div>
                 <div className="action pull-right">
-                  <input
-                    id="gear-sound"
-                    className="on-off"
-                    type="checkbox"
-                    checked
-                  />
+                  <input id="gear-sound" className="on-off" type="checkbox" />
                   <label htmlFor="gear-sound"></label>
                 </div>
               </div>
@@ -304,7 +576,11 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="html profile">
+          <div
+            className={`html profile ${
+              activeHtml === "profile" ? "visible" : ""
+            }`}
+          >
             <div className="photo flipInX animated">
               <img src="https://raw.githubusercontent.com/khadkamhn/secret-project/master/img/mohan.png" />
               <div className="social">
@@ -371,7 +647,11 @@ const Home = () => {
               </p>
             </div>
           </div>
-          <div className="html credits">
+          <div
+            className={`html credits ${
+              activeHtml === "credits" ? "visible" : ""
+            }`}
+          >
             <div className="title flipInY animated">
               I have been using the following assets to build this design
             </div>
@@ -437,24 +717,52 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div className="nav">
-          <a href="#profile" className="nav-item nav-count-1">
+        <div className={`nav ${navActive ? "active" : ""}`}>
+          <a
+            href="#profile"
+            className="nav-item nav-count-1"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavItemClick("profile", "Profile");
+            }}
+          >
             <i className="ion-ios-person-outline"></i>
             <span className="invisible">Profile</span>
           </a>
-          <a href="#compose" className="nav-item nav-count-2">
+          <a
+            href="#compose"
+            className="nav-item nav-count-2"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavItemClick("compose", "Compose");
+            }}
+          >
             <i className="ion-ios-compose-outline"></i>
             <span className="invisible">Compose</span>
           </a>
-          <a href="#chats" className="nav-item nav-count-3">
+          <a
+            href="#chats"
+            className="nav-item nav-count-3"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavItemClick("chats", "Chats");
+            }}
+          >
             <i className="ion-ios-chatboxes-outline"></i>
             <span className="invisible">Chats</span>
           </a>
-          <a href="#alarm" className="nav-item nav-count-4">
+          <a
+            href="#alarm"
+            className="nav-item nav-count-4"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavItemClick("alarm", "Alarm");
+            }}
+          >
             <i className="ion-ios-alarm-outline"></i>
             <span className="invisible">Alarm</span>
           </a>
-          <a href="#toggle" className="mask">
+          <a href="#toggle" className="mask" onClick={toggleNav}>
             <i className="ion-ios-plus-empty"></i>
           </a>
         </div>
