@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,10 +25,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      {/* <link
+          rel="stylesheet"
+          href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
+        />
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.2.3/animate.min.css"
+        /> */}
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+
+        <Script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js" />
+        <Script src="/script.js" />
       </body>
     </html>
   );

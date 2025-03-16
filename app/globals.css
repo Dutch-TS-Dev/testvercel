@@ -18,9 +18,16 @@
     --foreground: #ededed;
   }
 }
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
+* {
+  font-family: "Roboto", sans-serif !important;
+}
 
 body {
-  background: var(--background);
+  background: url("/court.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -966,3 +973,5 @@ body {
   line-height: 22px;
   text-align: center;
 }
+@import "./styles/animate.css";
+@import "./styles/icons.css";
