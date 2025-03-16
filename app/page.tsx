@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { useEffect } from "react";
 import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
+import { userAtom } from "./useAtoms";
 
 // Define types
 interface DatetimeState {
@@ -103,6 +104,7 @@ const Home = () => {
   const [navActive, setNavActive] = useAtom(navActiveAtom);
   const [searchVisible, setSearchVisible] = useAtom(searchVisibleAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
+  const [user, setUser] = useAtom(userAtom);
 
   // Initialize and update datetime
   useEffect(() => {

@@ -2,7 +2,7 @@ export type Player = {
   id: string;
   name: string;
   age: number;
-
+  rank?: number;
   email: string;
 };
 
@@ -10,8 +10,7 @@ export type Team = {
   id: string;
   name: string;
   rank: number;
-  players: Player[];
-  position: number;
+  playerIds: string[];
 };
 
 export enum MATCH_TYPE {
@@ -28,7 +27,6 @@ export type Match = {
   reporter: 1 | 2;
   score: string; // 11-2-11-3-
   date: Date;
-  location: string;
 };
 
 export type Ladder = {
