@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { sendMail } from "@/lib/mailer";
 
 const Auth = () => {
   const {
@@ -22,13 +23,24 @@ const Auth = () => {
   const onSubmit = async (data: any) => {
     try {
       if (isLogin) {
-        // 登录逻辑
+        // login
         await login(data.email, data.password);
         setSuccessMessage("Login successful! Redirecting...");
       } else {
-        // 注册逻辑
+        //register
         await authRegister(data.email, data.password, data.name, data.age);
         setSuccessMessage("Registration successful! Redirecting...");
+
+         // After successful registration, send an email.
+         await sendMail({
+          from: "teamworkforever2025@gmail.com", 
+           to: "oscar.vanvelsen@gmail.com",
+          // to: "jian.lu.ou@gmail.com", 
+          subject: "New User Registration", 
+          text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}`, 
+          attachments: [], 
+        });
+
         reset();
       }
     } catch (err: any) {
@@ -67,7 +79,7 @@ const Auth = () => {
               <form onSubmit={handleSubmit(onSubmit)}>
                 {!isLogin && (
                   <>
-                    {/* 注册部分的额外字段 */}
+                    
                     <div className="group clearfix slideInRight animated">
                       <label className="pull-left" htmlFor="register-name">
                         <span className="ion-ios-person-outline"></span> Full Name
@@ -113,7 +125,7 @@ const Auth = () => {
                   </>
                 )}
 
-{/* 公共字段：邮箱和密码 */}
+{/* email and password */}
 <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInRight"} animated`} style={{animationDelay: isLogin ? '0.1s' : '0.3s'}}>
   <label className="pull-left" htmlFor="register-email">
     <span className="ion-ios-email-outline"></span> Email
