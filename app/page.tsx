@@ -7,6 +7,7 @@ import { userAtom } from "./useAtoms";
 import Ladder from "./components/ladder";
 import Join from "./components/join";
 import { players } from "./data/players";
+import Auth from "./components/registLogin";
 
 // Define types
 interface DatetimeState {
@@ -219,6 +220,9 @@ const Home = () => {
               <div className="name">Mohan Khadka</div>
               <div className="email">contact@mohankhadka.com.np</div>
             </div>
+
+            
+
             <div className="nav-left">
               <a
                 href="#home"
@@ -292,7 +296,7 @@ const Home = () => {
               >
                 <span className="ion-ios-information-outline"></span> Credits
               </a>
-              <a
+              {/* <a
                 href="#credits"
                 onClick={(e) => {
                   e.preventDefault();
@@ -300,10 +304,21 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-user-outline"></span> Credits
-              </a>
+              </a> */}
               {/* <Link href="/register">
                 <span className="ion-ios-information-outline"></span> Register
               </Link> */}
+
+    <a
+      href="#register"
+      onClick={(e) => {
+        e.preventDefault();
+        handleSideNavClick("register", "Register");
+      }}
+    >
+      <span className="ion-ios-personadd-outline"></span> Register
+    </a>
+
             </div>
           </div>
         </div>
@@ -394,6 +409,11 @@ const Home = () => {
             className={`html join ${activeHtml === "join" ? "visible" : ""}`}
           >
             <Join />
+          </div>
+          <div
+            className={`html register ${activeHtml === "register" ? "visible" : ""}`}
+          >
+            <Auth />
           </div>
           <div
             className={`html compose ${

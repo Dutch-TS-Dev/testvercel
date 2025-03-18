@@ -25,9 +25,7 @@ export const useAuth = () => {
         email,
       };
 
-      console.log("player", player);
       await setDoc(doc(db, "players", userCredential.user.uid), player); // Write to Firestore
-      // alert("Registration successful!");
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again later."); // Set error message
       setUser(null); // Clear user data
