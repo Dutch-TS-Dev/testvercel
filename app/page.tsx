@@ -450,6 +450,7 @@ const Home = () => {
                 Groups
               </a>
             </div>
+
             <div className="players">
               {sortedPlayers.map((player) => (
                 <Ladder
