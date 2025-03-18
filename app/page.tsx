@@ -4,6 +4,9 @@ import Link from "next/link";
 import React, { useEffect } from "react";
 import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
 import { userAtom } from "./useAtoms";
+import Ladder from "./components/ladder";
+import Join from "./components/join";
+import { players } from "./data/players";
 
 // Define types
 interface DatetimeState {
@@ -105,6 +108,8 @@ const Home = () => {
   const [searchVisible, setSearchVisible] = useAtom(searchVisibleAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [user, setUser] = useAtom(userAtom);
+
+  const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
   // Initialize and update datetime
   useEffect(() => {
@@ -224,7 +229,7 @@ const Home = () => {
               >
                 <span className="ion-ios-home-outline"></span> Home
               </a>
-              <a
+              {/* <a
                 href="#alarm"
                 onClick={(e) => {
                   e.preventDefault();
@@ -232,6 +237,15 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-list-outline"></span> Alarm
+              </a> */}
+              <a
+                href="#join"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("join", "Join");
+                }}
+              >
+                <span className="ion-ios-people-outline"></span> Join
               </a>
               <a
                 href="#compose"
@@ -243,13 +257,13 @@ const Home = () => {
                 <span className="ion-ios-compose-outline"></span> Compose
               </a>
               <a
-                href="#chats"
+                href="#ladder"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSideNavClick("chats", "Chats");
+                  handleSideNavClick("ladder", "Ladder");
                 }}
               >
-                <span className="ion-ios-chatboxes-outline"></span> Chats
+                <span className="ion-ios-list-outline"></span> Ladder
               </a>
               <a
                 href="#profile"
@@ -317,7 +331,7 @@ const Home = () => {
               <div className="time lightSpeedIn animated">{datetime.time}</div>
             </div>
           </div>
-          <div
+          {/* <div
             className={`html alarm ${activeHtml === "alarm" ? "visible" : ""}`}
           >
             <div className="forecast clearfix">
@@ -375,6 +389,11 @@ const Home = () => {
                 </div>
               </div>
             </div>
+          </div> */}
+          <div
+            className={`html join ${activeHtml === "join" ? "visible" : ""}`}
+          >
+            <Join />
           </div>
           <div
             className={`html compose ${
@@ -416,11 +435,13 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`html chats ${activeHtml === "chats" ? "visible" : ""}`}
+            className={`html ladder ${
+              activeHtml === "ladder" ? "visible" : ""
+            }`}
           >
             <div className="tabs-list clearfix">
               <a href="#" className="tab active">
-                Users
+                Players
               </a>
               <a href="#" className="tab">
                 Messages
@@ -429,103 +450,16 @@ const Home = () => {
                 Groups
               </a>
             </div>
-            <div className="active-users">
-              <div className="user clearfix rotateInDownLeft animated">
-                <div className="photo pull-left">
-                  <img src="https://randomuser.me/api/portraits/men/99.jpg" />
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Connor Hartigan</p>
-                  <p className="position">Web &amp; UI Designer</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="away"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownRight animated">
-                <div className="photo pull-left">
-                  <img src="https://randomuser.me/api/portraits/men/89.jpg" />
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Jacob Lennon</p>
-                  <p className="position">Front-End Developer</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="offline"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownLeft animated">
-                <div className="photo pull-left">
-                  <i className="ion-trophy"></i>
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Winner</p>
-                  <p className="position">Number 1</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="online"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownLeft animated">
-                <div className="photo pull-left">
-                  <i className="ion-medal"></i>
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">2nd Winner</p>
-                  <p className="position">Number 1</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="online"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownLeft animated">
-                <div className="photo pull-left">
-                  <img src="https://randomuser.me/api/portraits/men/79.jpg" />
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Didier Mailly</p>
-                  <p className="position">Co-Founder</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="away"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownRight animated">
-                <div className="photo pull-left">
-                  <img src="https://randomuser.me/api/portraits/men/69.jpg" />
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Miguel Cunha Ferreira</p>
-                  <p className="position">Sales Manager</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="online"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownLeft animated">
-                <div className="photo pull-left">
-                  <img src="https://randomuser.me/api/portraits/men/59.jpg" />
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Eric Yuriev</p>
-                  <p className="position">App Developer</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="online"></span>
-                </div>
-              </div>
-              <div className="user clearfix rotateInDownRight animated">
-                <div className="photo pull-left">
-                  <img src="https://randomuser.me/api/portraits/men/49.jpg" />
-                </div>
-                <div className="desc pull-left">
-                  <p className="name">Theodore Clark</p>
-                  <p className="position">Project Manager</p>
-                </div>
-                <div className="idle pull-right">
-                  <span className="online"></span>
-                </div>
-              </div>
+            <div className="players">
+              {sortedPlayers.map((player) => (
+                <Ladder
+                  key={player.id}
+                  playerImage={player.image}
+                  playerName={player.name}
+                  playerTeamId={player.teamId}
+                  playerRank={player.rank}
+                />
+              ))}
             </div>
           </div>
           <div
@@ -743,17 +677,17 @@ const Home = () => {
             <span className="invisible">Compose</span>
           </a>
           <a
-            href="#chats"
+            href="#ladder"
             className="nav-item nav-count-3"
             onClick={(e) => {
               e.preventDefault();
-              handleNavItemClick("chats", "Chats");
+              handleNavItemClick("ladder", "Ladder");
             }}
           >
             <i className="ion-ios-chatboxes-outline"></i>
-            <span className="invisible">Chats</span>
+            <span className="invisible">Ladder</span>
           </a>
-          <a
+          {/* <a
             href="#alarm"
             className="nav-item nav-count-4"
             onClick={(e) => {
@@ -763,6 +697,17 @@ const Home = () => {
           >
             <i className="ion-ios-alarm-outline"></i>
             <span className="invisible">Alarm</span>
+          </a> */}
+          <a
+            href="#join"
+            className="nav-item nav-count-4"
+            onClick={(e) => {
+              e.preventDefault();
+              handleNavItemClick("join", "Join");
+            }}
+          >
+            <i className="ion-ios-people-outline"></i>
+            <span className="invisible">Join</span>
           </a>
           <a href="#toggle" className="mask" onClick={toggleNav}>
             <i className="ion-ios-plus-empty"></i>
