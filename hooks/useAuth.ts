@@ -1,34 +1,36 @@
-import { useState } from "react";
-import { auth } from "@/db"; // Import Firebase client auth and db
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; // Import Firestore methods
-import { db } from "@/db";  // Ensure Firestore instance is imported
+import { useState, useEffect } from "react";
+import { auth, db } from "@/db";
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+} from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
 export const useAuth = () => {
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false); 
 
   const register = async (email: string, password: string, name: string, age: number) => {
     setLoading(true);
-    setError(""); // Clear previous errors
+    setError("");
     try {
-      // 1. Create a user using Firebase Authentication
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user); // Set user data
-
-      // 2. Store user information in the Firestore "players" collection
+      
+      // Store user information in Firestore
       const player = {
-        id: userCredential.user.uid, // Use the user's UID as the document ID
+        id: userCredential.user.uid,
         name,
         age,
         email,
+        createdAt: new Date().toISOString(),
       };
 
-      await setDoc(doc(db, "players", userCredential.user.uid), player); // Write to Firestore
+      await setDoc(doc(db, "players", userCredential.user.uid), player);
+      return userCredential.user; // Return the user object for further operations
     } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again later."); // Set error message
-      setUser(null); // Clear user data
+        setError('This email is already in use.');
     } finally {
       setLoading(false);
     }
@@ -36,13 +38,13 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     setLoading(true);
-    setError(""); // Clear previous errors
+    setError("");
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      setUser(userCredential.user); // Set user data
+      setUser(userCredential.user);
+      return userCredential.user; // Return the user object for further operations
     } catch (err: any) {
-      setError(err.message || "Login failed. Please check your email or password."); // Set error message
-      setUser(null); // Clear user data
+      setError("Invalid email or password. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -51,11 +53,11 @@ export const useAuth = () => {
   const logout = async () => {
     setLoading(true);
     try {
-      await signOut(auth); // Use Firebase client to log out
-      setUser(null); // Clear user data
-      setError(""); // Clear error message
+      await signOut(auth);
+      return true; // Indicates successful logout
     } catch (err: any) {
-      setError(err.message || "Logout failed. Please try again later."); // Set error message
+      setError(err.message || "Logout failed. Please try again later.");
+      return false;
     } finally {
       setLoading(false);
     }

@@ -16,37 +16,55 @@ const Auth = () => {
   } = useForm();
 
   const { user, error, loading, login, register: authRegister } = useAuth();
-  const [isLogin, setIsLogin] = useState<boolean>(true); // 控制登录或注册
+  const [isLogin, setIsLogin] = useState<boolean>(true);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const onSubmit = async (data: any) => {
     try {
       if (isLogin) {
-        // login
-        await login(data.email, data.password);
-        setSuccessMessage("Login successful! Redirecting...");
+        // Login
+        const user = await login(data.email, data.password);
+        if (user) {
+          setSuccessMessage("Login successful! Redirecting...");
+
+          // Redirect after a short delay upon successful login
+          setTimeout(() => {
+            window.location.href = '/'; // Redirect to the home page
+          }, 1500); // Redirect after 1.5 seconds to give the user time to see the success message
+        } else {
+          setErrorMessage("Invalid email or password. Please try again.");
+        }
       } else {
-        //register
-        await authRegister(data.email, data.password, data.name, data.age);
-        setSuccessMessage("Registration successful! Redirecting...");
+        // Register
+        const newUser = await authRegister(data.email, data.password, data.name, data.age);
+        if (newUser) {
+          setSuccessMessage("Registration successful! Redirecting...");
 
-         // After successful registration, send an email.
-         await sendMail({
-          from: "teamworkforever2025@gmail.com", 
-           to: "oscar.vanvelsen@gmail.com",
-          // to: "jian.lu.ou@gmail.com", 
-          subject: "New User Registration", 
-          text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}`, 
-          attachments: [], 
-        });
+          // After successful registration, send an email.
+          await sendMail({
+            from: "teamworkforever2025@gmail.com",
+            // to: "oscar.vanvelsen@gmail.com",
+            to: "jian.lu.ou@gmail.com",
+            subject: "New User Registration",
+            text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}`,
+            attachments: [],
+          });
 
-        reset();
+          reset();
+
+          // Redirect after a short delay upon successful registration
+          setTimeout(() => {
+            window.location.href = '/'; // Redirect to the home page
+          }, 1500); // Redirect after 1.5 seconds to give the user time to see the success message
+        } else {
+          setErrorMessage("This email is already in use.");
+        }
       }
     } catch (err: any) {
       setErrorMessage(err.message || "An error occurred. Please try again.");
     }
-  };
+  }
 
   return (
     <div className="mobile-wrap">
@@ -79,7 +97,7 @@ const Auth = () => {
               <form onSubmit={handleSubmit(onSubmit)}>
                 {!isLogin && (
                   <>
-                    
+
                     <div className="group clearfix slideInRight animated">
                       <label className="pull-left" htmlFor="register-name">
                         <span className="ion-ios-person-outline"></span> Full Name
@@ -97,7 +115,7 @@ const Auth = () => {
                         })}
                       />
                       {errors.name && (
-                        <div className="error-text">{errors.name.message}</div>
+                        <div className="error-text">{(errors.name as any)?.message}</div>
                       )}
                     </div>
 
@@ -119,55 +137,58 @@ const Auth = () => {
                         })}
                       />
                       {errors.age && (
-                        <div className="error-text">{errors.age.message}</div>
+                        <div className="error-text">{(errors.age as any)?.message}</div>
                       )}
                     </div>
                   </>
                 )}
 
-{/* email and password */}
-<div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInRight"} animated`} style={{animationDelay: isLogin ? '0.1s' : '0.3s'}}>
-  <label className="pull-left" htmlFor="register-email">
-    <span className="ion-ios-email-outline"></span> Email
-  </label>
-  <input
-    className="pull-right"
-    id="register-email"
-    type="email"
-    {...register("email", {
-      required: "Email is required",
-      pattern: {
-        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        message: "Invalid email address",
-      },
-    })}
-  />
-  {errors.email && (
-    <div className="error-text">{errors.email.message}</div>
-  )}
-</div>
+                {/* email and password */}
+                <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInRight"} animated`} style={{ animationDelay: isLogin ? '0.1s' : '0.3s' }}>
+                  <label className="pull-left" htmlFor="register-email">
+                    <span className="ion-ios-email-outline"></span> Email
+                  </label>
+                  <input
+                    className="pull-right"
+                    id="register-email"
+                    type="email"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: "Invalid email address",
+                      },
+                    })}
+                    onFocus={() => setErrorMessage("")}
+                  />
+                  {errors.email && (
+                    <div className="error-text">{(errors.email as any)?.message}</div>
+                  )}
+                </div>
 
-<div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInLeft"} animated`} style={{animationDelay: isLogin ? '0.2s' : '0.4s', marginTop: '15px', marginBottom: '15px'}}>
-  <label className="pull-left" htmlFor="register-password">
-    <span className="ion-ios-locked-outline"></span> Password
-  </label>
-  <input
-    className="pull-right"
-    id="register-password"
-    type="password"
-    {...register("password", {
-      required: "Password is required",
-      minLength: {
-        value: 6,
-        message: "Password must be at least 6 characters",
-      },
-    })}
-  />
-  {errors.password && (
-    <div className="error-text">{errors.password.message}</div>
-  )}
-</div>
-               
+                <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInLeft"} animated`} style={{ animationDelay: isLogin ? '0.2s' : '0.4s', marginTop: '15px', marginBottom: '15px' }}>
+                  <label className="pull-left" htmlFor="register-password">
+                    <span className="ion-ios-locked-outline"></span> Password
+                  </label>
+                  <input
+                    className="pull-right"
+                    id="register-password"
+                    type="password"
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
+                      },
+                    })}
+                    onFocus={() => setErrorMessage("")}
+                  />
+
+                  {errors.password && (
+                    <div className="error-text">{(errors.password as any)?.message}</div>
+                  )}
+                </div>
+
                 {!isLogin && (
                   <div className="group clearfix slideInRight animated">
                     <label
@@ -189,7 +210,7 @@ const Auth = () => {
                     />
                     {errors.confirmPassword && (
                       <div className="error-text">
-                        {errors.confirmPassword.message}
+                        {(errors.confirmPassword as any)?.message}
                       </div>
                     )}
                   </div>
