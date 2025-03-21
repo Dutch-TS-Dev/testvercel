@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { sendMail } from "@/lib/mailer";
+import { toast } from "react-hot-toast"; // Import toast from react-hot-toast
 
 const Auth = () => {
   const {
@@ -15,56 +16,98 @@ const Auth = () => {
     reset,
   } = useForm();
 
-  const { user, error, loading, login, register: authRegister } = useAuth();
+  const {
+    user,
+    error: authError,
+    loading,
+    verificationSent,
+    login,
+    register: authRegister,
+    resendVerificationEmail
+  } = useAuth();
+
   const [isLogin, setIsLogin] = useState<boolean>(true);
-  const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [registeredPassword, setRegisteredPassword] = useState("");
+
+
+  // Update error message when authError changes
+  useEffect(() => {
+    if (authError) {
+      setErrorMessage(authError);
+    }
+  }, [authError]);
+
+  // Clear messages when switching between login and register modes
+  useEffect(() => {
+    setErrorMessage("");
+  }, [isLogin]);
 
   const onSubmit = async (data: any) => {
     try {
       if (isLogin) {
-        // Login
+        // Login process
         const user = await login(data.email, data.password);
         if (user) {
-          setSuccessMessage("Login successful! Redirecting...");
+          // Show success toast notification
+          toast.success("Login successful! Redirecting...", {
+            duration: 3000,
+            position: "top-center",
+          });
 
           // Redirect after a short delay upon successful login
           setTimeout(() => {
             window.location.href = '/'; // Redirect to the home page
-          }, 1500); // Redirect after 1.5 seconds to give the user time to see the success message
+          }, 1500);
         } else {
-          setErrorMessage("Invalid email or password. Please try again.");
+          // Error message will be set by the useAuth hook
+          setErrorMessage(authError);
         }
       } else {
-        // Register
+        // Register process
         const newUser = await authRegister(data.email, data.password, data.name, data.age);
         if (newUser) {
-          setSuccessMessage("Registration successful! Redirecting...");
+          // Store credentials for potential resend
+          setRegisteredEmail(data.email);
+          setRegisteredPassword(data.password);
+          // Show success toast notification
+          toast.success("Registration successful! Please check your email to verify your account before logging in.", {
+            duration: 5000,
+            position: "top-center",
+          });
 
-          // After successful registration, send an email.
+          // After successful registration, send an admin notification email
           await sendMail({
             from: "teamworkforever2025@gmail.com",
-            // to: "oscar.vanvelsen@gmail.com",
             to: "jian.lu.ou@gmail.com",
             subject: "New User Registration",
-            text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}`,
+            text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}\n\nUser needs to verify their email address.`,
             attachments: [],
           });
 
           reset();
-
-          // Redirect after a short delay upon successful registration
-          setTimeout(() => {
-            window.location.href = '/'; // Redirect to the home page
-          }, 1500); // Redirect after 1.5 seconds to give the user time to see the success message
         } else {
-          setErrorMessage("This email is already in use.");
+          setErrorMessage(authError || "Registration failed. Please try again.");
         }
       }
     } catch (err: any) {
       setErrorMessage(err.message || "An error occurred. Please try again.");
     }
-  }
+  };
+
+  // Handle resending verification email
+  const handleResendVerification = async () => {
+    const success = await resendVerificationEmail(registeredEmail, registeredPassword);
+    if (success) {
+      toast.success("Verification email resent. Please check your inbox.", {
+        duration: 3000,
+        position: "top-center",
+      });
+    } else {
+      setErrorMessage(authError || "Failed to resend verification email.");
+    }
+  };
 
   return (
     <div className="mobile-wrap">
@@ -81,15 +124,19 @@ const Auth = () => {
               {isLogin ? "Welcome Back" : "Create Account"}
             </div>
 
-            {successMessage && (
-              <div className="success-message flipInX animated">
-                {successMessage}
-              </div>
-            )}
-
             {errorMessage && (
               <div className="error-message flipInX animated">
                 {errorMessage}
+                {errorMessage.includes("verify your email") && (
+                  <div className="mt-2">
+                    <button
+                      onClick={handleResendVerification}
+                      className="text-blue-500 hover:underline text-sm cursor-pointer"
+                    >
+                      Resend verification email
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -97,7 +144,6 @@ const Auth = () => {
               <form onSubmit={handleSubmit(onSubmit)}>
                 {!isLogin && (
                   <>
-
                     <div className="group clearfix slideInRight animated">
                       <label className="pull-left" htmlFor="register-name">
                         <span className="ion-ios-person-outline"></span> Full Name

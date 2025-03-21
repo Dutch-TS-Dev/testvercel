@@ -4,6 +4,8 @@ export type Player = {
   age: number;
   rank?: number;
   email: string;
+  emailVerified?: boolean;
+  createdAt?: string;
 };
 
 export type Team = {
