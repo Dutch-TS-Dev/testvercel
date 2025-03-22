@@ -6,7 +6,6 @@ export const players = [
     email: "thomas.mueller@example.com",
     teamId: "8a5d0e1c-154f-47e2-93e1-a4b25c61415b",
     rank: 1,
-    image: "https://randomuser.me/api/portraits/men/1.jpg",
   },
   {
     id: "f2a28290-1e9c-48a5-b1e7-2c2a8fa86eccr",
@@ -15,7 +14,6 @@ export const players = [
     email: "julia.weber@example.com",
     teamId: "8a5d0e1c-154f-47e2-93e1-a4b25c61415b",
     rank: 2,
-    image: "https://randomuser.me/api/portraits/women/1.jpg",
   },
   {
     id: "6ac3e4b7-bf9c-4d94-9dc8-5517bc2e87a7",
@@ -24,7 +22,6 @@ export const players = [
     email: "michael.schmidt@example.com",
     teamId: "3c6f2e1d-9b4a-4e8c-ba27-34d6e71a5c82",
     rank: 3,
-    image: "https://randomuser.me/api/portraits/men/2.jpg",
   },
   {
     id: "1d8f3a6e-2c7b-45d9-b1a8-9e5c4f8d2e3b",
@@ -33,7 +30,6 @@ export const players = [
     email: "laura.fischer@example.com",
     teamId: "3c6f2e1d-9b4a-4e8c-ba27-34d6e71a5c82",
     rank: 4,
-    image: "https://randomuser.me/api/portraits/women/2.jpg",
   },
   {
     id: "9b5c7a3e-1d8f-42e6-b3a7-5c2d1e9f8a4b",
@@ -42,7 +38,6 @@ export const players = [
     email: "stefan.wagner@example.com",
     teamId: "5e9d2c7b-1a8f-43e6-b7c1-9d8e2a5f4b3c",
     rank: 5,
-    image: "https://randomuser.me/api/portraits/men/3.jpg",
   },
   {
     id: "4b2e8c7a-3d9f-41e5-a6b2-8c7d3e5f9a1b",
@@ -51,7 +46,6 @@ export const players = [
     email: "sophia.becker@example.com",
     teamId: "5e9d2c7b-1a8f-43e6-b7c1-9d8e2a5f4b3c",
     rank: 6,
-    image: "https://randomuser.me/api/portraits/women/3.jpg",
   },
   {
     id: "7d9e5a3b-2c4f-48d7-b1a9-3e8c6f4d2b5a",
@@ -60,7 +54,6 @@ export const players = [
     email: "markus.hoffmann@example.com",
     teamId: "7b2d9c4a-3e8f-41d6-a2b7-5c9d3e1f8a4b",
     rank: 7,
-    image: "https://randomuser.me/api/portraits/men/4.jpg",
   },
   {
     id: "2e1d9c7b-4a3f-45e8-b2a7-1d8c5f3e9a4b",
@@ -69,7 +62,6 @@ export const players = [
     email: "anna.schulz@example.com",
     teamId: "7b2d9c4a-3e8f-41d6-a2b7-5c9d3e1f8a4b",
     rank: 8,
-    image: "https://randomuser.me/api/portraits/women/4.jpg",
   },
   {
     id: "5a3b9e7d-2c8f-44d6-b1a5-9e3c7f2d4b8a",
@@ -78,7 +70,6 @@ export const players = [
     email: "david.koch@example.com",
     teamId: "1d9c4b2e-7a3f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 9,
-    image: "https://randomuser.me/api/portraits/men/5.jpg",
   },
   {
     id: "8c4b2e7a-3d9f-41e5-a6b2-8c7d3e5f9a1b",
@@ -87,7 +78,6 @@ export const players = [
     email: "lisa.meyer@example.com",
     teamId: "1d9c4b2e-7a3f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 10,
-    image: "https://randomuser.me/api/portraits/women/5.jpg",
   },
   {
     id: "3e8c5a7d-9b2f-46d4-b1a8-3e7c5f9d2b4a",
@@ -96,7 +86,6 @@ export const players = [
     email: "jonas.richter@example.com",
     teamId: "9c4b2e7a-3d1f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 11,
-    image: "https://randomuser.me/api/portraits/men/6.jpg",
   },
   {
     id: "6f4d2b5a-7c3e-48d9-b1a6-3e8c5f9d2b7a",
@@ -105,7 +94,6 @@ export const players = [
     email: "lena.wolf@example.com",
     teamId: "9c4b2e7a-3d1f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 12,
-    image: "https://randomuser.me/api/portraits/women/6.jpg",
   },
   {
     id: "9c7b5a3e-2d8f-46d4-b1a9-5e3c7f2d4b8a",
@@ -114,7 +102,6 @@ export const players = [
     email: "felix.schaefer@example.com",
     teamId: "2e7d9c4a-3b8f-41d6-a2e7-5c9d3e1f8a4b",
     rank: 13,
-    image: "https://randomuser.me/api/portraits/men/7.jpg",
   },
   {
     id: "2c8f4d6b-9a3e-47d5-b1a2-8e5c3f9d7b4a",
@@ -123,7 +110,6 @@ export const players = [
     email: "emilia.bauer@example.com",
     teamId: "2e7d9c4a-3b8f-41d6-a2e7-5c9d3e1f8a4b",
     rank: 14,
-    image: "https://randomuser.me/api/portraits/women/7.jpg",
   },
   {
     id: "5d9e7b3a-4c2f-48d6-b1a5-9e3c7f2d4b8a",
@@ -132,7 +118,6 @@ export const players = [
     email: "niklas.klein@example.com",
     teamId: "4b7e1d9c-5a3f-42e8-b7a2-1c9d3e5f8a4b",
     rank: 15,
-    image: "https://randomuser.me/api/portraits/men/8.jpg",
   },
   {
     id: "8f4d2b5a-7c3e-49d8-b1a6-3e8c5f9d2b7a",
@@ -141,7 +126,6 @@ export const players = [
     email: "hannah.schneider@example.com",
     teamId: "4b7e1d9c-5a3f-42e8-b7a2-1c9d3e5f8a4b",
     rank: 16,
-    image: "https://randomuser.me/api/portraits/women/8.jpg",
   },
   {
     id: "1c8f4d6b-9a3e-47d5-b1a2-8e5c3f9d7b4a",
@@ -150,7 +134,6 @@ export const players = [
     email: "leon.zimmermann@example.com",
     teamId: "6a9c4b2e-7d3f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 17,
-    image: "https://randomuser.me/api/portraits/men/9.jpg",
   },
   {
     id: "4d9e7b3a-2c8f-45d6-b1a4-9e3c7f2d4b8a",
@@ -159,7 +142,6 @@ export const players = [
     email: "sophie.krause@example.com",
     teamId: "6a9c4b2e-7d3f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 18,
-    image: "https://randomuser.me/api/portraits/women/9.jpg",
   },
   {
     id: "7f4d2b5a-1c3e-48d9-b1a7-3e8c5f9d2b7a",
@@ -168,7 +150,6 @@ export const players = [
     email: "tim.schwarz@example.com",
     teamId: "8c4b2e7a-9d3f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 19,
-    image: "https://randomuser.me/api/portraits/men/10.jpg",
   },
   {
     id: "0c8f4d6b-9a3e-47d5-b1a0-8e5c3f9d7b4a",
@@ -177,7 +158,6 @@ export const players = [
     email: "marie.neumann@example.com",
     teamId: "8c4b2e7a-9d3f-45e8-b2a7-5c9d3e1f8a4b",
     rank: 20,
-    image: "https://randomuser.me/api/portraits/women/10.jpg",
   },
   {
     id: "3d9e7b3a-2c8f-45d6-b1a3-9e3c7f2d4b8a",
@@ -186,7 +166,6 @@ export const players = [
     email: "lukas.werner@example.com",
     teamId: "0c4b2e7a-3d9f-45e8-b2a0-5c9d3e1f8a4b",
     rank: 21,
-    image: "https://randomuser.me/api/portraits/men/11.jpg",
   },
   {
     id: "6f4d2b5a-1c3e-48d9-b1a6-3e8c5f9d2b7a",
@@ -195,7 +174,6 @@ export const players = [
     email: "emma.schmitt@example.com",
     teamId: "0c4b2e7a-3d9f-45e8-b2a0-5c9d3e1f8a4b",
     rank: 22,
-    image: "https://randomuser.me/api/portraits/women/11.jpg",
   },
   {
     id: "9c8f4d6b-9a3e-47d5-b1a9-8e5c3f9d7b4a",
@@ -204,7 +182,6 @@ export const players = [
     email: "paul.krueger@example.com",
     teamId: "2c4b2e7a-3d9f-45e8-b2a2-5c9d3e1f8a4b",
     rank: 23,
-    image: "https://randomuser.me/api/portraits/men/12.jpg",
   },
   {
     id: "2d9e7b3a-2c8f-45d6-b1a2-9e3c7f2d4b8a",
@@ -213,7 +190,6 @@ export const players = [
     email: "mia.hofmann@example.com",
     teamId: "2c4b2e7a-3d9f-45e8-b2a2-5c9d3e1f8a4b",
     rank: 24,
-    image: "https://randomuser.me/api/portraits/women/12.jpg",
   },
   {
     id: "5f4d2b5a-1c3e-48d9-b1a5-3e8c5f9d2b7a",
@@ -222,7 +198,6 @@ export const players = [
     email: "jan.braun@example.com",
     teamId: "4c4b2e7a-3d9f-45e8-b2a4-5c9d3e1f8a4b",
     rank: 25,
-    image: "https://randomuser.me/api/portraits/men/13.jpg",
   },
   {
     id: "8c8f4d6b-9a3e-47d5-b1a8-8e5c3f9d7b4a",
@@ -231,7 +206,6 @@ export const players = [
     email: "lea.koenig@example.com",
     teamId: "4c4b2e7a-3d9f-45e8-b2a4-5c9d3e1f8a4b",
     rank: 26,
-    image: "https://randomuser.me/api/portraits/women/13.jpg",
   },
   {
     id: "1d9e7b3a-2c8f-45d6-b1a1-9e3c7f2d4b8a",
@@ -240,7 +214,6 @@ export const players = [
     email: "finn.huber@example.com",
     teamId: "6c4b2e7a-3d9f-45e8-b2a6-5c9d3e1f8a4b",
     rank: 27,
-    image: "https://randomuser.me/api/portraits/men/14.jpg",
   },
   {
     id: "4f4d2b5a-1c3e-48d9-b1a4-3e8c5f9d2b7a",
@@ -249,7 +222,6 @@ export const players = [
     email: "sarah.peters@example.com",
     teamId: "6c4b2e7a-3d9f-45e8-b2a6-5c9d3e1f8a4b",
     rank: 28,
-    image: "https://randomuser.me/api/portraits/women/14.jpg",
   },
   {
     id: "7c8f4d6b-9a3e-47d5-b1a7-8e5c3f9d7b4a",
@@ -258,7 +230,6 @@ export const players = [
     email: "max.berger@example.com",
     teamId: "8c4b2e7a-3d9f-45e8-b2a8-5c9d3e1f8a4b",
     rank: 29,
-    image: "https://randomuser.me/api/portraits/men/15.jpg",
   },
   {
     id: "0d9e7b3a-2c8f-45d6-b1a0-9e3c7f2d4b8a",
@@ -267,6 +238,5 @@ export const players = [
     email: "lara.herrmann@example.com",
     teamId: "8c4b2e7a-3d9f-45e8-b2a8-5c9d3e1f8a4b",
     rank: 30,
-    image: "https://randomuser.me/api/portraits/women/15.jpg",
   },
 ];

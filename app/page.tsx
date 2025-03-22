@@ -435,7 +435,6 @@ const Home = () => {
               {sortedPlayers.map((player) => (
                 <Ladder
                   key={player.id}
-                  playerImage={player.image}
                   playerName={player.name}
                   playerTeamId={player.teamId}
                   playerRank={player.rank}
