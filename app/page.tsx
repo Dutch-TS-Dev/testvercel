@@ -32,8 +32,8 @@ const datetimeAtom = atom<DatetimeState>({
   time: "",
 });
 
-const activeHtmlAtom = atom<string>("welcome");
-const pageTitleAtom = atom<string>("Home");
+const activeHtmlAtom = atom<string>("ladder");
+const pageTitleAtom = atom<string>("Ladder");
 const sidebarActiveAtom = atom<boolean>(false);
 const navActiveAtom = atom<boolean>(false);
 const searchVisibleAtom = atom<boolean>(false);
@@ -221,13 +221,13 @@ const Home = () => {
             </div>
             <div className="nav-left">
               <a
-                href="#home"
+                href="#ladder"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSideNavClick("welcome", "Home");
+                  handleSideNavClick("ladder", "Ladder");
                 }}
               >
-                <span className="ion-ios-home-outline"></span> Home
+                <span className="ion-ios-list-outline"></span> Ladder
               </a>
               {/* <a
                 href="#alarm"
@@ -255,15 +255,6 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-compose-outline"></span> Compose
-              </a>
-              <a
-                href="#ladder"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSideNavClick("ladder", "Ladder");
-                }}
-              >
-                <span className="ion-ios-list-outline"></span> Ladder
               </a>
               <a
                 href="#profile"
@@ -319,17 +310,6 @@ const Home = () => {
               <br />
               no matches found for <b className="key">{searchQuery}</b>
             </p>
-          </div>
-          <div
-            className={`html welcome ${
-              activeHtml === "welcome" ? "visible" : ""
-            }`}
-          >
-            <div className="datetime">
-              <div className="day lightSpeedIn animated">Pickleball Ladder</div>
-              <div className="date lightSpeedIn animated">{datetime.date}</div>
-              <div className="time lightSpeedIn animated">{datetime.time}</div>
-            </div>
           </div>
           {/* <div
             className={`html alarm ${activeHtml === "alarm" ? "visible" : ""}`}
@@ -685,7 +665,7 @@ const Home = () => {
               handleNavItemClick("ladder", "Ladder");
             }}
           >
-            <i className="ion-ios-chatboxes-outline"></i>
+            <i className="ion-ios-list-outline"></i>
             <span className="invisible">Ladder</span>
           </a>
           {/* <a
