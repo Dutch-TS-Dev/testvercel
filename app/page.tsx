@@ -284,13 +284,13 @@ const Home = () => {
                 <span className="ion-ios-information-outline"></span> Credits
               </a>
               <a
-                href="#credits"
+                href="#login"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSideNavClick("credits", "Credits");
+                  handleSideNavClick("login", "Login");
                 }}
               >
-                <span className="ion-ios-user-outline"></span> Credits
+                <span className="ion-ios-locked-outline"></span> Login
               </a>
               {/* <Link href="/register">
                 <span className="ion-ios-information-outline"></span> Register
