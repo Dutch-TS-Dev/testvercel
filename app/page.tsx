@@ -199,7 +199,7 @@ const Home = () => {
   const handleAuthAction = async (e:any) => {
     e.preventDefault();
 
-    if (user) {
+    if (user && user.emailVerified) {
       // User is logged in, handle logout
       const success = await logout();
       if (success) {
@@ -339,15 +339,6 @@ const Home = () => {
                 <span className="ion-ios-information-outline"></span> Register
               </Link> */}
 
-              {/* <a
-      href="#register"
-      onClick={(e) => {
-        e.preventDefault();
-        handleSideNavClick("register", "Register");
-      }}
-    >
-      <span className="ion-ios-personadd-outline"></span> Register
-    </a> */}
 
               <a
                 href={user && user.emailVerified ? "#logout" : "#register"}

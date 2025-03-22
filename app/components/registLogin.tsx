@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { sendMail } from "@/lib/mailer";
-import { toast } from "react-hot-toast"; // Import toast from react-hot-toast
+import { toast } from "react-hot-toast";
 
 const Auth = () => {
   const {
@@ -23,14 +23,12 @@ const Auth = () => {
     verificationSent,
     login,
     register: authRegister,
-    resendVerificationEmail
   } = useAuth();
 
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [registeredEmail, setRegisteredEmail] = useState("");
   const [registeredPassword, setRegisteredPassword] = useState("");
-
 
   // Update error message when authError changes
   useEffect(() => {
@@ -58,7 +56,7 @@ const Auth = () => {
 
           // Redirect after a short delay upon successful login
           setTimeout(() => {
-            window.location.href = '/'; // Redirect to the home page
+            window.location.href = "/"; // Redirect to the home page
           }, 1500);
         } else {
           // Error message will be set by the useAuth hook
@@ -96,47 +94,30 @@ const Auth = () => {
     }
   };
 
-  // Handle resending verification email
-  const handleResendVerification = async () => {
-    const success = await resendVerificationEmail(registeredEmail, registeredPassword);
-    if (success) {
-      toast.success("Verification email resent. Please check your inbox.", {
-        duration: 3000,
-        position: "top-center",
-      });
-    } else {
-      setErrorMessage(authError || "Failed to resend verification email.");
-    }
-  };
-
   return (
-    <div className="mobile-wrap">
+    
       <div className="mobile clearfix">
         <div className="header">
-          <Link href="/" className="ion-ios-arrow-back pull-left">
-            <i></i>
-          </Link>
-          <span className="title">{isLogin ? "Login" : "Register"}</span>
+          <div className="auth-toggle">
+            <button
+              className={isLogin ? "active" : ""}
+              onClick={() => setIsLogin(true)}
+            >
+              Login
+            </button>
+            <button
+              className={!isLogin ? "active" : ""}
+              onClick={() => setIsLogin(false)}
+            >
+              Register
+            </button>
+          </div>
         </div>
         <div className="content">
           <div className="html register visible">
-            <div className="title bounceInDown animated">
-              {isLogin ? "Welcome Back" : "Create Account"}
-            </div>
-
             {errorMessage && (
               <div className="error-message flipInX animated">
                 {errorMessage}
-                {errorMessage.includes("verify your email") && (
-                  <div className="mt-2">
-                    <button
-                      onClick={handleResendVerification}
-                      className="text-blue-500 hover:underline text-sm cursor-pointer"
-                    >
-                      Resend verification email
-                    </button>
-                  </div>
-                )}
               </div>
             )}
 
@@ -149,7 +130,7 @@ const Auth = () => {
                         <span className="ion-ios-person-outline"></span> Full Name
                       </label>
                       <input
-                        className="pull-right"
+                        className="pull-right input-underline"
                         id="register-name"
                         type="text"
                         {...register("name", {
@@ -169,9 +150,8 @@ const Auth = () => {
                       <label className="pull-left" htmlFor="register-age">
                         <span className="ion-ios-person-outline"></span> Age
                       </label>
-                      <div className="clearfix"></div>
                       <input
-                        className="pull-right"
+                        className="pull-right input-underline"
                         id="register-age"
                         type="number"
                         {...register("age", {
@@ -190,12 +170,12 @@ const Auth = () => {
                 )}
 
                 {/* email and password */}
-                <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInRight"} animated`} style={{ animationDelay: isLogin ? '0.1s' : '0.3s' }}>
+                <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInRight"} animated`} style={{ animationDelay: isLogin ? "0.1s" : "0.3s" }}>
                   <label className="pull-left" htmlFor="register-email">
                     <span className="ion-ios-email-outline"></span> Email
                   </label>
                   <input
-                    className="pull-right"
+                    className="pull-right input-underline"
                     id="register-email"
                     type="email"
                     {...register("email", {
@@ -212,12 +192,12 @@ const Auth = () => {
                   )}
                 </div>
 
-                <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInLeft"} animated`} style={{ animationDelay: isLogin ? '0.2s' : '0.4s', marginTop: '15px', marginBottom: '15px' }}>
+                <div className={`group clearfix ${isLogin ? "fadeInUp" : "slideInLeft"} animated`} style={{ animationDelay: isLogin ? "0.2s" : "0.4s", marginTop: "15px", marginBottom: "15px" }}>
                   <label className="pull-left" htmlFor="register-password">
                     <span className="ion-ios-locked-outline"></span> Password
                   </label>
                   <input
-                    className="pull-right"
+                    className="pull-right input-underline"
                     id="register-password"
                     type="password"
                     {...register("password", {
@@ -229,76 +209,22 @@ const Auth = () => {
                     })}
                     onFocus={() => setErrorMessage("")}
                   />
-
                   {errors.password && (
                     <div className="error-text">{(errors.password as any)?.message}</div>
                   )}
                 </div>
-
-                {!isLogin && (
-                  <div className="group clearfix slideInRight animated">
-                    <label
-                      className="pull-left"
-                      htmlFor="register-confirm-password"
-                    >
-                      <span className="ion-ios-locked-outline"></span> Confirm
-                      Password
-                    </label>
-                    <input
-                      className="pull-right"
-                      id="register-confirm-password"
-                      type="password"
-                      {...register("confirmPassword", {
-                        required: "Please confirm your password",
-                        validate: (value) =>
-                          value === watch("password") || "Passwords do not match",
-                      })}
-                    />
-                    {errors.confirmPassword && (
-                      <div className="error-text">
-                        {(errors.confirmPassword as any)?.message}
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 <div className="action flipInY animated">
                   <button type="submit" className="btn" disabled={loading}>
                     {loading ? "Loading..." : isLogin ? "Login" : "Register"}
                   </button>
                 </div>
-
-                <div className="login-link fadeInUp animated">
-                  {isLogin ? (
-                    <>
-                      Don't have an account?{" "}
-                      <button
-                        type="button"
-                        onClick={() => setIsLogin(false)}
-                        className="text-blue-500 hover:underline"
-                      >
-                        Register
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Already have an account?{" "}
-                      <button
-                        type="button"
-                        onClick={() => setIsLogin(true)}
-                        className="text-blue-500 hover:underline"
-                      >
-                        Login
-                      </button>
-                    </>
-                  )}
-                </div>
               </form>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    
   );
 };
 

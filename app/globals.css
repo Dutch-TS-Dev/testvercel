@@ -545,6 +545,7 @@ body {
 .compose .forms .group input,
 .compose .forms .group textarea {
   color: #fff;
+  outline: none;
   border: none;
   resize: none;
   min-width: 185px;
@@ -1200,3 +1201,145 @@ body {
 
 @import "./styles/animate.css";
 @import "./styles/icons.css";
+
+
+/* Auth Toggle */
+.auth-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.auth-toggle button {
+  color: #aaa;
+  border: none;
+  padding: 8px 20px;
+  background: transparent;
+  margin: 0 10px;
+  font-size: 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.auth-toggle button.active,
+.auth-toggle button:hover {
+  color: #fff;
+  border-bottom: 2px solid #fff;
+  font-weight: 500;
+}
+
+/* Auth Form Styling - Matching Compose Styling */
+.register .forms .group {
+  margin-bottom: 6px;
+}
+
+.register .forms .group > label {
+  padding: 6px 0;
+  min-width: 40px;
+  display: inline-block;
+  /* float: left; */
+}
+
+.register .forms .group > label > span {
+  min-width: 20px;
+  display: inline-block;
+}
+
+.register .forms .group input {
+  color: #fff;
+  outline: none;
+  border: none;
+  min-width: 185px;
+  background: transparent;
+  padding: 5px 10px 1px;
+  border-bottom: 1px solid rgba(170, 170, 170, 0.6);
+  float: right;
+}
+
+.register .forms .error-text {
+  color: #ff6b6b;
+  font-size: 12px;
+  margin-top: 5px;
+  clear: both;
+  width: 100%;
+}
+
+.register .forms .error-message {
+  color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 10px;
+  border-left: 3px solid #ff6b6b;
+  margin-bottom: 20px;
+}
+
+/* Animation timing similar to compose */
+.register .forms .group:nth-child(1) {
+  -webkit-animation-duration: 0.1s;
+  animation-duration: 0.1s;
+}
+
+.register .forms .group:nth-child(2) {
+  -webkit-animation-duration: 0.2s;
+  animation-duration: 0.2s;
+}
+
+.register .forms .group:nth-child(3) {
+  -webkit-animation-duration: 0.3s;
+  animation-duration: 0.3s;
+}
+
+.register .forms .group:nth-child(4) {
+  -webkit-animation-duration: 0.4s;
+  animation-duration: 0.4s;
+}
+
+/* Make sure inputs and labels are on the same line
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+} */
+
+/* .pull-left {
+  float: left;
+}
+
+.pull-right {
+  float: right;
+} */
+
+/* Input field styling */
+.register .forms .group input {
+  color: #fff !important;
+  background-color: transparent !important;
+  outline: none;
+  border: none;
+  min-width: 185px;
+  padding: 5px 10px 1px;
+  border-bottom: 1px solid rgba(170, 170, 170, 0.6);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Fix focus state as well */
+.register .forms .group input:focus
+ {
+  color: #fff !important;
+  background-color: transparent !important;
+  outline: none;
+}
+
+/* Ensure webkit autofill doesn't change background */
+.register .forms .group input:-webkit-autofill {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Handle placeholders */
+.register .forms .group input::placeholder
+{
+  color: rgba(255, 255, 255, 0.5);
+}

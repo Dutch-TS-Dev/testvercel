@@ -89,45 +89,6 @@ export const useAuth = () => {
     }
   };
 
-  const resendVerificationEmail = async (email?: string, password?: string) => {
-    // Check if we have a current user first
-    if (auth.currentUser) {
-      console.log("Resending verification email...");
-      try {
-        await sendEmailVerification(auth.currentUser);
-        setVerificationSent(true);
-        return true;
-      } catch (err: any) {
-        setError("Failed to resend verification email. Please try again later.");
-        return false;
-      }
-    }
-    
-    // If no current user but we have credentials
-    if (email && password) {
-      try {
-        // Sign in temporarily 
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const tempUser = userCredential.user;
-        
-        // Send verification email
-        await sendEmailVerification(tempUser);
-        
-        // Sign out since they're not verified yet
-        await signOut(auth);
-        
-        setVerificationSent(true);
-        return true;
-      } catch (err: any) {
-        setError("Failed to authenticate for verification email. " + err.message);
-        return false;
-      }
-    }
-    
-    setError("No user is currently signed in.");
-    return false;
-  };
-
   const logout = async () => {
     setLoading(true);
     try {
@@ -150,6 +111,5 @@ export const useAuth = () => {
     login, 
     register, 
     logout,
-    resendVerificationEmail
   };
 };
