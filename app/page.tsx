@@ -290,8 +290,35 @@ const Home = () => {
                   handleSideNavClick("login", "Login");
                 }}
               >
-                <span className="ion-ios-locked-outline"></span> Login
+                <span className="ion-ios-unlocked-outline"></span> Login
               </a>
+              <a
+                href="#logout"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("logout", "Logout");
+                }}
+              >
+                <span className="ion-ios-locked-outline"></span> Logout
+              </a>
+              {/* <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("login", "Login");
+                }}
+              >
+                <span className="ion-log-in"></span> Login
+              </a>
+              <a
+                href="#logout"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("logout", "Logout");
+                }}
+              >
+                <span className="ion-log-out"></span> Logout
+              </a> */}
               {/* <Link href="/register">
                 <span className="ion-ios-information-outline"></span> Register
               </Link> */}
