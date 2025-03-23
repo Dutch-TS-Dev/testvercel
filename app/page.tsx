@@ -196,7 +196,7 @@ const Home = () => {
   };
 
   // Handle authentication action (Register or Logout)
-  const handleAuthAction = async (e:any) => {
+  const handleAuthAction = async (e: any) => {
     e.preventDefault();
 
     if (user && user.emailVerified) {
@@ -247,11 +247,14 @@ const Home = () => {
           ></div>
           <div className="sidebar-content">
             <div className="top-head">
-              <div className="name">Mohan Khadka</div>
-              <div className="email">contact@mohankhadka.com.np</div>
+              {user && user.emailVerified ? (
+                <>
+                  <div className="name">{user.name}</div>
+                  <div className="email">{user.email}</div>
+                </>) :
+                 <div>Welcome to Pickleball! You need to log in or register.</div>
+              }
             </div>
-
-
 
             <div className="nav-left">
               <a
