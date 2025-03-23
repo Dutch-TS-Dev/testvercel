@@ -1202,7 +1202,6 @@ body {
 @import "./styles/animate.css";
 @import "./styles/icons.css";
 
-
 /* Auth Toggle */
 .auth-toggle {
   display: flex;
@@ -1254,7 +1253,6 @@ body {
   background: transparent;
   padding: 5px 10px 1px;
   border-bottom: 1px solid rgba(170, 170, 170, 0.6);
-  float: right;
 }
 
 .register .forms .error-text {
@@ -1324,8 +1322,7 @@ body {
 }
 
 /* Fix focus state as well */
-.register .forms .group input:focus
- {
+.register .forms .group input:focus {
   color: #fff !important;
   background-color: transparent !important;
   outline: none;
@@ -1339,7 +1336,13 @@ body {
 }
 
 /* Handle placeholders */
-.register .forms .group input::placeholder
-{
+.register .forms .group input::placeholder {
   color: rgba(255, 255, 255, 0.5);
+}
+.small-info-text {
+  font-size: 13px;
+}
+
+button {
+  cursor: pointer;
 }

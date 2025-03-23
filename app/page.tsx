@@ -120,7 +120,6 @@ const Home = () => {
     setUser(authUser);
   }, [authUser, setUser]);
 
-
   const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
   // Initialize and update datetime
@@ -241,8 +240,9 @@ const Home = () => {
         </div>
         <div className={`sidebar ${sidebarActive ? "active" : ""}`}>
           <div
-            className={`sidebar-overlay ${sidebarActive ? "fadeIn animated" : "fadeOut animated"
-              }`}
+            className={`sidebar-overlay ${
+              sidebarActive ? "fadeIn animated" : "fadeOut animated"
+            }`}
             onClick={toggleSidebar}
           ></div>
           <div className="sidebar-content">
@@ -251,9 +251,12 @@ const Home = () => {
                 <>
                   <div className="name">{user.name}</div>
                   <div className="email">{user.email}</div>
-                </>) :
-                 <div>Welcome to Pickleball! You need to log in or register.</div>
-              }
+                </>
+              ) : (
+                <div>
+                  Welcome to Pickleball! You need to log in or register.
+                </div>
+              )}
             </div>
 
             <div className="nav-left">
@@ -342,21 +345,27 @@ const Home = () => {
                 <span className="ion-ios-information-outline"></span> Register
               </Link> */}
 
-
               <a
                 href={user && user.emailVerified ? "#logout" : "#register"}
                 onClick={handleAuthAction}
               >
-                <span className={user && user.emailVerified ? "ion-ios-log-out-outline" : "ion-ios-personadd-outline"}></span>
-                {user && user.emailVerified ? "Logout" : "Register"}
+                <span
+                  className={
+                    user && user.emailVerified
+                      ? "ion-ios-log-out-outline"
+                      : "ion-ios-personadd-outline"
+                  }
+                ></span>
+                {user && user.emailVerified ? "Logout" : "Login"}
               </a>
             </div>
           </div>
         </div>
         <div className="content">
           <div
-            className={`html search ${activeHtml === "search" ? "visible" : ""
-              }`}
+            className={`html search ${
+              activeHtml === "search" ? "visible" : ""
+            }`}
           >
             <div className="title bounceInDown animated">Search Result</div>
             <p className="flipInX animated">
@@ -366,8 +375,9 @@ const Home = () => {
             </p>
           </div>
           <div
-            className={`html welcome ${activeHtml === "welcome" ? "visible" : ""
-              }`}
+            className={`html welcome ${
+              activeHtml === "welcome" ? "visible" : ""
+            }`}
           >
             <div className="datetime">
               <div className="day lightSpeedIn animated">Pickleball Ladder</div>
@@ -440,13 +450,16 @@ const Home = () => {
             <Join />
           </div>
           <div
-            className={`html register ${activeHtml === "register" ? "visible" : ""}`}
+            className={`html register ${
+              activeHtml === "register" ? "visible" : ""
+            }`}
           >
             <Auth />
           </div>
           <div
-            className={`html compose ${activeHtml === "compose" ? "visible" : ""
-              }`}
+            className={`html compose ${
+              activeHtml === "compose" ? "visible" : ""
+            }`}
           >
             <div className="forms">
               <div className="group clearfix slideInRight animated">
@@ -483,8 +496,9 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`html ladder ${activeHtml === "ladder" ? "visible" : ""
-              }`}
+            className={`html ladder ${
+              activeHtml === "ladder" ? "visible" : ""
+            }`}
           >
             <div className="tabs-list clearfix">
               <a href="#" className="tab active">
@@ -511,8 +525,9 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`html settings ${activeHtml === "settings" ? "visible" : ""
-              }`}
+            className={`html settings ${
+              activeHtml === "settings" ? "visible" : ""
+            }`}
           >
             <div className="setting-list">
               <div className="gear clearfix slideInRight animated">
@@ -560,8 +575,9 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`html profile ${activeHtml === "profile" ? "visible" : ""
-              }`}
+            className={`html profile ${
+              activeHtml === "profile" ? "visible" : ""
+            }`}
           >
             <div className="photo flipInX animated">
               <img src="https://raw.githubusercontent.com/khadkamhn/secret-project/master/img/mohan.png" />
@@ -630,8 +646,9 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`html credits ${activeHtml === "credits" ? "visible" : ""
-              }`}
+            className={`html credits ${
+              activeHtml === "credits" ? "visible" : ""
+            }`}
           >
             <div className="title flipInY animated">
               I have been using the following assets to build this design

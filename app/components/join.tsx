@@ -91,8 +91,10 @@ const JoinPage: React.FC<JoinPageProps> = () => {
           </div>
           <div className="content">
             <div className="html visible">
-              <div className="title bounceInDown animated">Not Logged In</div>
-              <p className="flipInX animated">
+              <div className="mt-[15px] ml-[15px] small-info-text bounceInDown animated small-info-text">
+                Not Logged In
+              </div>
+              <p className="ml-[15px] flipInX animated small-info-text">
                 Please login first to join the ladder competition.
               </p>
               <div className="action flipInY animated">
