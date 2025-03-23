@@ -32,8 +32,8 @@ const datetimeAtom = atom<DatetimeState>({
   time: "",
 });
 
-const activeHtmlAtom = atom<string>("welcome");
-const pageTitleAtom = atom<string>("Home");
+const activeHtmlAtom = atom<string>("ladder");
+const pageTitleAtom = atom<string>("Ladder");
 const sidebarActiveAtom = atom<boolean>(false);
 const navActiveAtom = atom<boolean>(false);
 const searchVisibleAtom = atom<boolean>(false);
@@ -221,13 +221,13 @@ const Home = () => {
             </div>
             <div className="nav-left">
               <a
-                href="#home"
+                href="#ladder"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSideNavClick("welcome", "Home");
+                  handleSideNavClick("ladder", "Ladder");
                 }}
               >
-                <span className="ion-ios-home-outline"></span> Home
+                <span className="ion-ios-list-outline"></span> Ladder
               </a>
               {/* <a
                 href="#alarm"
@@ -257,15 +257,6 @@ const Home = () => {
                 <span className="ion-ios-compose-outline"></span> Compose
               </a>
               <a
-                href="#ladder"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSideNavClick("ladder", "Ladder");
-                }}
-              >
-                <span className="ion-ios-list-outline"></span> Ladder
-              </a>
-              <a
                 href="#profile"
                 onClick={(e) => {
                   e.preventDefault();
@@ -293,14 +284,41 @@ const Home = () => {
                 <span className="ion-ios-information-outline"></span> Credits
               </a>
               <a
-                href="#credits"
+                href="#login"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSideNavClick("credits", "Credits");
+                  handleSideNavClick("login", "Login");
                 }}
               >
-                <span className="ion-ios-user-outline"></span> Credits
+                <span className="ion-ios-unlocked-outline"></span> Login
               </a>
+              <a
+                href="#logout"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("logout", "Logout");
+                }}
+              >
+                <span className="ion-ios-locked-outline"></span> Logout
+              </a>
+              {/* <a
+                href="#login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("login", "Login");
+                }}
+              >
+                <span className="ion-log-in"></span> Login
+              </a>
+              <a
+                href="#logout"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("logout", "Logout");
+                }}
+              >
+                <span className="ion-log-out"></span> Logout
+              </a> */}
               {/* <Link href="/register">
                 <span className="ion-ios-information-outline"></span> Register
               </Link> */}
@@ -319,17 +337,6 @@ const Home = () => {
               <br />
               no matches found for <b className="key">{searchQuery}</b>
             </p>
-          </div>
-          <div
-            className={`html welcome ${
-              activeHtml === "welcome" ? "visible" : ""
-            }`}
-          >
-            <div className="datetime">
-              <div className="day lightSpeedIn animated">Pickleball Ladder</div>
-              <div className="date lightSpeedIn animated">{datetime.date}</div>
-              <div className="time lightSpeedIn animated">{datetime.time}</div>
-            </div>
           </div>
           {/* <div
             className={`html alarm ${activeHtml === "alarm" ? "visible" : ""}`}
@@ -455,7 +462,6 @@ const Home = () => {
               {sortedPlayers.map((player) => (
                 <Ladder
                   key={player.id}
-                  playerImage={player.image}
                   playerName={player.name}
                   playerTeamId={player.teamId}
                   playerRank={player.rank}
@@ -685,7 +691,7 @@ const Home = () => {
               handleNavItemClick("ladder", "Ladder");
             }}
           >
-            <i className="ion-ios-chatboxes-outline"></i>
+            <i className="ion-ios-list-outline"></i>
             <span className="invisible">Ladder</span>
           </a>
           {/* <a
