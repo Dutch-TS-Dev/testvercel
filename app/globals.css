@@ -1206,7 +1206,7 @@ body {
 .auth-toggle {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .auth-toggle button {
@@ -1237,7 +1237,6 @@ body {
   padding: 6px 0;
   min-width: 40px;
   display: inline-block;
-  /* float: left; */
 }
 
 .register .forms .group > label > span {
@@ -1258,7 +1257,7 @@ body {
 .register .forms .error-text {
   color: #ff6b6b;
   font-size: 12px;
-  margin-top: 5px;
+  margin-top: 2px;
   clear: both;
   width: 100%;
 }
@@ -1268,7 +1267,7 @@ body {
   background: rgba(255, 107, 107, 0.1);
   padding: 10px;
   border-left: 3px solid #ff6b6b;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
 }
 
 /* Animation timing similar to compose */
@@ -1292,20 +1291,6 @@ body {
   animation-duration: 0.4s;
 }
 
-/* Make sure inputs and labels are on the same line
-.clearfix:after {
-  content: "";
-  display: table;
-  clear: both;
-} */
-
-/* .pull-left {
-  float: left;
-}
-
-.pull-right {
-  float: right;
-} */
 
 /* Input field styling */
 .register .forms .group input {
@@ -1314,7 +1299,7 @@ body {
   outline: none;
   border: none;
   min-width: 185px;
-  padding: 5px 10px 1px;
+  padding: 8px 10px 1px;
   border-bottom: 1px solid rgba(170, 170, 170, 0.6);
   -webkit-appearance: none;
   -moz-appearance: none;

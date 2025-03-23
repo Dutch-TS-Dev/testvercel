@@ -14,6 +14,7 @@ const Auth = () => {
     formState: { errors },
     watch,
     reset,
+    clearErrors
   } = useForm();
 
   const {
@@ -123,9 +124,9 @@ const Auth = () => {
         </div>
       </div>
       <div className="content">
-        <div className="html register visible">
+        <div className="html register visible relative">
           {errorMessage && (
-            <div className="error-message flipInX animated">{errorMessage}</div>
+            <div className="error-message flipInX animated absolute  -top-23 left-0 w-full">{errorMessage}</div>
           )}
 
           <div className="forms">
@@ -149,10 +150,11 @@ const Auth = () => {
                       })}
                     />
                     {errors.name && (
-                      <div className="error-text">
+                      <div className="error-text absolute bottom-5 left-0 w-full ">
                         {(errors.name as any)?.message}
                       </div>
                     )}
+                    
                   </div>
 
                   <div className="group clearfix slideInLeft animated">
@@ -172,7 +174,7 @@ const Auth = () => {
                       })}
                     />
                     {errors.age && (
-                      <div className="error-text">
+                      <div className="error-text absolute bottom-5 left-0 w-full ">
                         {(errors.age as any)?.message}
                       </div>
                     )}
@@ -187,10 +189,10 @@ const Auth = () => {
                 } animated`}
                 style={{ animationDelay: isLogin ? "0.1s" : "0.3s" }}
               >
-                <p className="small-info-text mb-[20px]">
+              {isLogin &&  <p className="small-info-text mb-[20px]">
                   Don't have an account yet?
                   <br /> Please click on register{" "}
-                </p>
+                </p>} 
                 <label className="pull-left" htmlFor="register-email">
                   <span className="ion-ios-email-outline"></span> Email
                 </label>
@@ -208,7 +210,7 @@ const Auth = () => {
                   onFocus={() => setErrorMessage("")}
                 />
                 {errors.email && (
-                  <div className="error-text">
+                  <div className="error-text absolute bottom-5 left-0 w-full ">
                     {(errors.email as any)?.message}
                   </div>
                 )}
@@ -220,7 +222,6 @@ const Auth = () => {
                 } animated`}
                 style={{
                   animationDelay: isLogin ? "0.2s" : "0.4s",
-                  marginTop: "15px",
                   marginBottom: "15px",
                 }}
               >
@@ -238,10 +239,10 @@ const Auth = () => {
                       message: "Password must be at least 6 characters",
                     },
                   })}
-                  onFocus={() => setErrorMessage("")}
+                   onFocus={() => setErrorMessage("")}
                 />
                 {errors.password && (
-                  <div className="error-text">
+                  <div className="error-text absolute bottom-5 left-0 w-full ">
                     {(errors.password as any)?.message}
                   </div>
                 )}

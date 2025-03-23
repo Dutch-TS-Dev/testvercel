@@ -84,7 +84,7 @@ const JoinPage: React.FC<JoinPageProps> = () => {
   // If user is not logged in, show login message
   if (!user || !user.id) {
     return (
-      <div className="mobile-wrap">
+      // <div className="mobile-wrap">
         <div className="mobile clearfix">
           <div className="header">
             <span className="title">Join Ladder</span>
@@ -105,7 +105,7 @@ const JoinPage: React.FC<JoinPageProps> = () => {
             </div>
           </div>
         </div>
-      </div>
+      // </div>
     );
   }
 

@@ -253,8 +253,10 @@ const Home = () => {
                   <div className="email">{user.email}</div>
                 </>
               ) : (
-                <div>
-                  Welcome to Pickleball! You need to log in or register.
+                <div className="small-info-text mb-4">
+                  Welcome to Pickleball! 
+                 <br/> You need to Login or Register.
+                   
                 </div>
               )}
             </div>
