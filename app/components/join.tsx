@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAtom, atom } from "jotai";
+import { useAtom, atom, useSetAtom } from "jotai";
 import { userAtom } from "../useAtoms";
 import { Player } from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
+import {authModeAtom,currentViewAtom} from "@/app/viewAtoms";
 
 // Component types
 type GameType = "SINGLES" | "DOUBLES" | null;
@@ -20,7 +21,10 @@ interface JoinFormInputs {
 const gameTypeAtom = atom<GameType>(null);
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
 
-interface JoinPageProps {}
+
+// export const authModeAtom = atom<'login' | 'register'>('login');
+
+interface JoinPageProps { }
 
 // Join Page Component
 const JoinPage: React.FC<JoinPageProps> = () => {
@@ -28,6 +32,8 @@ const JoinPage: React.FC<JoinPageProps> = () => {
   const [gameType, setGameType] = useAtom(gameTypeAtom);
   const [step, setStep] = useAtom(stepAtom);
   const router = useRouter(); // Use Next.js router to handle navigation
+  const setCurrentView = useSetAtom(currentViewAtom);
+const setAuthMode = useSetAtom(authModeAtom);
 
   // React Hook Form setup
   const {
@@ -85,26 +91,30 @@ const JoinPage: React.FC<JoinPageProps> = () => {
   if (!user || !user.id) {
     return (
       // <div className="mobile-wrap">
-        <div className="mobile clearfix">
-          <div className="header">
-            <span className="title">Join Ladder</span>
-          </div>
-          <div className="content">
-            <div className="html visible">
-              <div className="mt-[15px] ml-[15px] small-info-text bounceInDown animated small-info-text">
-                Not Logged In
-              </div>
-              <p className="ml-[15px] flipInX animated small-info-text">
-                Please login first to join the ladder competition.
-              </p>
-              <div className="action flipInY animated">
-                <button className="btn" onClick={() => router.push("/login")}>
-                  Go to Login
-                </button>
-              </div>
+      <div className="mobile clearfix">
+        <div className="header">
+          <span className="title">Join Ladder</span>
+        </div>
+        <div className="content">
+          <div className="html visible">
+            <div className="mt-[15px] ml-[15px] small-info-text bounceInDown animated small-info-text">
+              Not Logged In
+            </div>
+            <p className="ml-[15px] flipInX animated small-info-text">
+              Please login first to join the ladder competition.
+            </p>
+            <div className="action flipInY animated">
+              <button className="btn" onClick={() => {
+                setAuthMode('login');
+                setCurrentView('auth');
+                // router.push("/login");
+              }}>
+                Go to Login
+              </button>
             </div>
           </div>
         </div>
+      </div>
       // </div>
     );
   }

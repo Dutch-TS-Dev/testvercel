@@ -13,68 +13,58 @@ import { useAtom } from "jotai";
 import { userAtom } from "@/app/useAtoms";
 import * as Types from "@/types";
 
+// Default user structure
+const DEFAULT_USER: Types.Player = {
+  id: "",
+  name: "",
+  age: 0,
+  email: "",
+  emailVerified: false,
+};
+
 export const useAuth = () => {
-  // Keep the original user state for Firebase authentication
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false); 
+  const [loading, setLoading] = useState<boolean>(false);
   const [verificationSent, setVerificationSent] = useState<boolean>(false);
   
-  // Add Jotai state
   const [_, setJotaiUser] = useAtom(userAtom);
 
-  // Keep the original onAuthStateChanged listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       
-      // If user is logged in, synchronize the Jotai state
       if (currentUser) {
         try {
           const userDoc = await getDoc(doc(db, "players", currentUser.uid));
-          if (userDoc.exists()) {
-            const userData = userDoc.data() as Types.Player;
-            // Include emailVerified from Firebase Auth
-            setJotaiUser({
-              ...userData,
-              emailVerified: currentUser.emailVerified
-            });
-            
-            console.log("Updated Jotai user with auth state:", {
-              ...userData,
-              emailVerified: currentUser.emailVerified
-            });
-          } else {
-            // User exists in Auth but not in Firestore
-            // Create default user data with emailVerified from Auth
-            const defaultUserData = {
-              id: currentUser.uid,
-              name: currentUser.displayName || "New User",
-              email: currentUser.email || "",
-              age: 0,
-              emailVerified: currentUser.emailVerified
-            };
-            setJotaiUser(defaultUserData);
-            console.log("Created default Jotai user:", defaultUserData);
-          }
+          const userData = userDoc.exists() 
+            ? userDoc.data() as Types.Player 
+            : {
+                ...DEFAULT_USER,
+                id: currentUser.uid,
+                name: currentUser.displayName || "New User",
+                email: currentUser.email || "",
+              };
+
+          const completeUserData = {
+            ...userData,
+            emailVerified: currentUser.emailVerified
+          };
+
+          setJotaiUser(completeUserData);
         } catch (err) {
           console.error("Error fetching user data:", err);
+          setJotaiUser({
+            ...DEFAULT_USER,
+            id: currentUser.uid,
+            emailVerified: currentUser.emailVerified
+          });
         }
       } else {
-        // User logged out, reset Jotai state
-        const defaultUser = {
-          id: "",
-          name: "",
-          age: 0,
-          email: "",
-          emailVerified: false,
-        };
-        setJotaiUser(defaultUser);
-        console.log("Reset Jotai user to default:", defaultUser);
+        setJotaiUser(DEFAULT_USER);
       }
     });
     
-    // Clean up subscription
     return () => unsubscribe();
   }, [setJotaiUser]);
 
@@ -82,11 +72,9 @@ export const useAuth = () => {
     setLoading(true);
     setError("");
     try {
-      // Create user
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const currentUser = userCredential.user;
       
-      // Create player object
       const player: Types.Player = {
         id: currentUser.uid,
         name,
@@ -95,27 +83,22 @@ export const useAuth = () => {
         emailVerified: currentUser.emailVerified,
       };
 
-      // Store user information in Firestore
       await setDoc(doc(db, "players", currentUser.uid), {
         ...player,
         createdAt: new Date().toISOString(),
       });
       
-      // Update Jotai atom state
       setJotaiUser(player);
-      console.log("Registered user and updated Jotai state:", player);
-      
-      // Send email verification
       await sendEmailVerification(currentUser);
       setVerificationSent(true);
       
       return currentUser; 
     } catch (err: any) {
-      if (err.code === 'auth/email-already-in-use') {
-        setError('This email is already in use.');
-      } else {
-        setError(err.message || 'Registration failed. Please try again.');
-      }
+      setError(
+        err.code === 'auth/email-already-in-use' 
+          ? 'This email is already in use.' 
+          : 'Registration failed. Please try again.'
+      );
       return null;
     } finally {
       setLoading(false);
@@ -126,44 +109,33 @@ export const useAuth = () => {
     setLoading(true);
     setError("");
     try {
-      // Sign in with email and password
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const currentUser = userCredential.user;
       
-      // Check if email is verified
       if (!currentUser.emailVerified) {
-        // If email is not verified, sign out the user
         await signOut(auth);
         setError("Please verify your email before logging in. Check your inbox.");
         return null;
       }
       
-      // Fetch user data from Firestore and update Jotai atom state
       const userDoc = await getDoc(doc(db, "players", currentUser.uid));
-      if (userDoc.exists()) {
-        const userData = userDoc.data() as Types.Player;
-        // Add emailVerified from Firebase Auth
-        const updatedUserData = {
-          ...userData,
-          emailVerified: currentUser.emailVerified
-        };
-        setJotaiUser(updatedUserData);
-        console.log("Logged in and updated Jotai state:", updatedUserData);
-      } else {
-        // User exists in Auth but not in Firestore
-        // Create a default user object with emailVerified
-        const defaultUserData = {
-          id: currentUser.uid,
-          name: currentUser.displayName || "User",
-          email: currentUser.email || "",
-          age: 0,
-          emailVerified: currentUser.emailVerified
-        };
-        setJotaiUser(defaultUserData);
-        console.log("Created default user data for login:", defaultUserData);
-      }
+      const userData = userDoc.exists() 
+        ? userDoc.data() as Types.Player 
+        : {
+            ...DEFAULT_USER,
+            id: currentUser.uid,
+            name: currentUser.displayName || "User",
+            email: currentUser.email || "",
+          };
+
+      const updatedUserData = {
+        ...userData,
+        emailVerified: currentUser.emailVerified
+      };
+
+      await setDoc(doc(db, "players", currentUser.uid), updatedUserData);
+      setJotaiUser(updatedUserData);
       
-      // onAuthStateChanged will automatically set user state
       return currentUser;
     } catch (err: any) {
       setError("Invalid email or password. Please try again.");
@@ -177,20 +149,8 @@ export const useAuth = () => {
     setLoading(true);
     try {
       await signOut(auth);
-      // onAuthStateChanged will handle setting user to null
-      
-      // Reset Jotai atom state to default value
-      const defaultUser = {
-        id: "",
-        name: "",
-        age: 0,
-        email: "",
-        emailVerified: false,
-      };
-      setJotaiUser(defaultUser);
-      console.log("Logged out and reset Jotai state:", defaultUser);
-      
-      return true; // Indicates successful logout
+      setJotaiUser(DEFAULT_USER);
+      return true;
     } catch (err: any) {
       setError(err.message || "Logout failed. Please try again later.");
       return false;
@@ -199,9 +159,8 @@ export const useAuth = () => {
     }
   };
 
-  // Maintain the original return structure
   return { 
-    user, // Keep the same user key as in the original code
+    user, 
     error, 
     loading, 
     verificationSent,

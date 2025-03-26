@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { sendMail } from "@/lib/mailer";
 import { toast } from "react-hot-toast";
+import { useAtom } from "jotai";
+import {authModeAtom, currentViewAtom} from "@/app/viewAtoms";
 
 const Auth = () => {
   const {
@@ -26,11 +27,20 @@ const Auth = () => {
     register: authRegister,
   } = useAuth();
 
-  const [isLogin, setIsLogin] = useState<boolean>(true);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [registeredEmail, setRegisteredEmail] = useState("");
-  const [registeredPassword, setRegisteredPassword] = useState("");
+  const [authMode, setAuthMode] = useAtom(authModeAtom);
+  const [isLogin, setIsLogin] = useState<boolean>(authMode === 'login');
 
+  // const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  
+  const[_, setCurrentView] = useAtom(currentViewAtom);
+
+   // Update isLogin state when authMode changes
+   useEffect(() => {
+    setIsLogin(authMode === 'login');
+  }, [authMode]);
+  
+ 
   // Update error message when authError changes
   useEffect(() => {
     if (authError) {
@@ -43,6 +53,15 @@ const Auth = () => {
     setErrorMessage("");
   }, [isLogin]);
 
+  useEffect(() => {
+    // Reset form and clear errors when user changes
+    if (!user) {
+      reset(); // Reset form
+      clearErrors(); 
+      setErrorMessage(""); 
+    }
+  }, [user, reset, clearErrors]);
+
   const onSubmit = async (data: any) => {
     try {
       if (isLogin) {
@@ -54,11 +73,10 @@ const Auth = () => {
             duration: 3000,
             position: "top-center",
           });
-
-          // Redirect after a short delay upon successful login
+         
           setTimeout(() => {
-            window.location.href = "/"; // Redirect to the home page
-          }, 1500);
+            setCurrentView('welcome');
+          }, 1000);
         } else {
           // Error message will be set by the useAuth hook
           setErrorMessage(authError);
@@ -72,9 +90,6 @@ const Auth = () => {
           data.age
         );
         if (newUser) {
-          // Store credentials for potential resend
-          setRegisteredEmail(data.email);
-          setRegisteredPassword(data.password);
           // Show success toast notification
           toast.success(
             "Registration successful! Please check your email to verify your account before logging in.",
@@ -105,19 +120,30 @@ const Auth = () => {
     }
   };
 
+  // Handle login/register toggle with authModeAtom
+ const handleLoginToggle = () => {
+  setIsLogin(true);
+  setAuthMode('login');
+};
+
+const handleRegisterToggle = () => {
+  setIsLogin(false);
+  setAuthMode('register');
+};
+
   return (
     <div className="mobile clearfix">
       <div className="header">
         <div className="auth-toggle">
           <button
             className={isLogin ? "active" : ""}
-            onClick={() => setIsLogin(true)}
+            onClick={handleLoginToggle}
           >
             Login
           </button>
           <button
             className={!isLogin ? "active" : ""}
-            onClick={() => setIsLogin(false)}
+            onClick={handleRegisterToggle}
           >
             Register
           </button>
@@ -262,3 +288,4 @@ const Auth = () => {
 };
 
 export default Auth;
+

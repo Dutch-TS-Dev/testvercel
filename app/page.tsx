@@ -10,6 +10,7 @@ import { players } from "./data/players";
 import Auth from "./components/registLogin";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
+import { currentViewAtom, ViewType } from '@/app/viewAtoms';
 
 // Define types
 interface DatetimeState {
@@ -111,14 +112,28 @@ const Home = () => {
   const [searchVisible, setSearchVisible] = useAtom(searchVisibleAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [user, setUser] = useAtom(userAtom);
-
+  const [currentView,setCurrentView] = useAtom(currentViewAtom);
   // Get authentication state and functions from useAuth
-  const { user: authUser, logout } = useAuth();
+  const {  logout } = useAuth();
 
-  // Update the user atom when authUser changes
   useEffect(() => {
-    setUser(authUser);
-  }, [authUser, setUser]);
+    const newTitle = {
+      welcome: 'Home',
+      join: 'Join',
+      auth:'Register', 
+      ladder: 'Ladder',
+      profile: 'Profile'
+    }[currentView];
+    
+    if (newTitle) setPageTitle(newTitle);
+  }, [currentView]);
+  
+  useEffect(() => {
+    // Always keep activeHtml in sync with currentView
+    if (currentView !== activeHtml) {
+      setActiveHtml(currentView);
+    }
+  }, [activeHtml, currentView, setActiveHtml]);
 
   const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
@@ -151,6 +166,7 @@ const Home = () => {
   const handleSideNavClick = (pageName: string, title: string) => {
     setSidebarActive(false);
     setActiveHtml(pageName || "welcome");
+    setCurrentView(pageName as ViewType);
     setPageTitle(title);
   };
 
@@ -204,7 +220,13 @@ const Home = () => {
       if (success) {
         toast.success("Logged out successfully");
         // Force update the user state to ensure UI updates immediately
-        setUser(null);
+        // setUser(null);
+        setUser({
+          id: "",
+          name: "",
+          age: 0,
+          email: "",
+        })
         // Redirect to home after logout
         handleSideNavClick("welcome", "Home");
       }
@@ -451,9 +473,10 @@ const Home = () => {
           >
             <Join />
           </div>
+
           <div
             className={`html register ${
-              activeHtml === "register" ? "visible" : ""
+               activeHtml === "auth" ? "visible" : ""
             }`}
           >
             <Auth />
