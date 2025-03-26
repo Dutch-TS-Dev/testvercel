@@ -7,6 +7,8 @@ import { Player } from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import {authModeAtom,currentViewAtom} from "@/app/viewAtoms";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/db";
 
 // Component types
 type GameType = "SINGLES" | "DOUBLES" | null;
@@ -48,18 +50,53 @@ const setAuthMode = useSetAtom(authModeAtom);
     },
   });
 
-  // Form submission handler
   const onSubmit: SubmitHandler<JoinFormInputs> = async (data) => {
-    // In a real app, you would send the data to your backend here
-    console.log({
-      gameType,
-      user,
-      teamName: data.teamName,
-      partnerEmail: data.partnerEmail,
-    });
-
-    // Move to confirmation step
-    setStep(3);
+    // Check if partner email is the same as current user's email
+    if (user?.email === data.partnerEmail) {
+      // You might want to add a more user-friendly error handling
+      alert("You cannot be your own partner!");
+      return;
+    }
+  
+    try {
+      // Query Firestore to find the partner by email
+      const playersRef = collection(db, 'players');
+      const q = query(playersRef, 
+        where('email', '==', data.partnerEmail),
+        where('emailVerified', '==', true)
+      );
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (querySnapshot.empty) {
+        // No verified player found with this email
+        alert("No verified player found with this email!");
+        return;
+      }
+  
+      // Get the partner's document
+      const partnerDoc = querySnapshot.docs[0];
+      const partnerData = partnerDoc.data() as Player;
+  
+      // Additional checks can be added here 
+      // For example, check if the partner is already in a team, etc.
+  
+      // If all checks pass, proceed with form submission
+      console.log({
+        gameType,
+        user,
+        teamName: data.teamName,
+        partnerEmail: data.partnerEmail,
+        partnerId: partnerDoc.id
+      });
+  
+      // Move to confirmation step
+      setStep(3);
+  
+    } catch (error) {
+      console.error("Error checking partner email:", error);
+      alert("An error occurred while validating the partner's email.");
+    }
   };
 
   // Handle game type selection

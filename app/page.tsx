@@ -476,7 +476,7 @@ const Home = () => {
 
           <div
             className={`html register ${
-               activeHtml === "auth" ? "visible" : ""
+              activeHtml === "register" || activeHtml === "auth" ? "visible" : ""
             }`}
           >
             <Auth />
