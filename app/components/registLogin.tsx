@@ -75,7 +75,7 @@ const Auth = () => {
           });
          
           setTimeout(() => {
-            setCurrentView('welcome');
+            setCurrentView('ladder');
           }, 1000);
         } else {
           // Error message will be set by the useAuth hook
