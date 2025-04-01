@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { useAtom, atom } from "jotai";
+import { useAtom, atom, useSetAtom } from "jotai";
 import { userAtom } from "../useAtoms";
 import { Player } from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
+import {authModeAtom,currentViewAtom} from "@/app/viewAtoms";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/db";
 
 // Component types
 type GameType = "SINGLES" | "DOUBLES" | null;
@@ -20,7 +23,10 @@ interface JoinFormInputs {
 const gameTypeAtom = atom<GameType>(null);
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
 
-interface JoinPageProps {}
+
+// export const authModeAtom = atom<'login' | 'register'>('login');
+
+interface JoinPageProps { }
 
 // Join Page Component
 const JoinPage: React.FC<JoinPageProps> = () => {
@@ -28,6 +34,8 @@ const JoinPage: React.FC<JoinPageProps> = () => {
   const [gameType, setGameType] = useAtom(gameTypeAtom);
   const [step, setStep] = useAtom(stepAtom);
   const router = useRouter(); // Use Next.js router to handle navigation
+  const setCurrentView = useSetAtom(currentViewAtom);
+const setAuthMode = useSetAtom(authModeAtom);
 
   // React Hook Form setup
   const {
@@ -42,18 +50,53 @@ const JoinPage: React.FC<JoinPageProps> = () => {
     },
   });
 
-  // Form submission handler
   const onSubmit: SubmitHandler<JoinFormInputs> = async (data) => {
-    // In a real app, you would send the data to your backend here
-    console.log({
-      gameType,
-      user,
-      teamName: data.teamName,
-      partnerEmail: data.partnerEmail,
-    });
-
-    // Move to confirmation step
-    setStep(3);
+    // Check if partner email is the same as current user's email
+    if (user?.email === data.partnerEmail) {
+      // You might want to add a more user-friendly error handling
+      alert("You cannot be your own partner!");
+      return;
+    }
+  
+    try {
+      // Query Firestore to find the partner by email
+      const playersRef = collection(db, 'players');
+      const q = query(playersRef, 
+        where('email', '==', data.partnerEmail),
+        where('emailVerified', '==', true)
+      );
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (querySnapshot.empty) {
+        // No verified player found with this email
+        alert("No verified player found with this email!");
+        return;
+      }
+  
+      // Get the partner's document
+      const partnerDoc = querySnapshot.docs[0];
+      const partnerData = partnerDoc.data() as Player;
+  
+      // Additional checks can be added here 
+      // For example, check if the partner is already in a team, etc.
+  
+      // If all checks pass, proceed with form submission
+      console.log({
+        gameType,
+        user,
+        teamName: data.teamName,
+        partnerEmail: data.partnerEmail,
+        partnerId: partnerDoc.id
+      });
+  
+      // Move to confirmation step
+      setStep(3);
+  
+    } catch (error) {
+      console.error("Error checking partner email:", error);
+      alert("An error occurred while validating the partner's email.");
+    }
   };
 
   // Handle game type selection
@@ -84,26 +127,32 @@ const JoinPage: React.FC<JoinPageProps> = () => {
   // If user is not logged in, show login message
   if (!user || !user.id) {
     return (
-      <div className="mobile-wrap">
-        <div className="mobile clearfix">
-          <div className="header">
-            <span className="title">Join Ladder</span>
-          </div>
-          <div className="content">
-            <div className="html visible">
-              <div className="title bounceInDown animated">Not Logged In</div>
-              <p className="flipInX animated">
-                Please login first to join the ladder competition.
-              </p>
-              <div className="action flipInY animated">
-                <button className="btn" onClick={() => router.push("/login")}>
-                  Go to Login
-                </button>
-              </div>
+      // <div className="mobile-wrap">
+      <div className="mobile clearfix">
+        <div className="header">
+          <span className="title">Join Ladder</span>
+        </div>
+        <div className="content">
+          <div className="html visible">
+            <div className="mt-[15px] ml-[15px] small-info-text bounceInDown animated small-info-text">
+              Not Logged In
+            </div>
+            <p className="ml-[15px] flipInX animated small-info-text">
+              Please login first to join the ladder competition.
+            </p>
+            <div className="action flipInY animated">
+              <button className="btn" onClick={() => {
+                setAuthMode('login');
+                setCurrentView('auth');
+                // router.push("/login");
+              }}>
+                Go to Login
+              </button>
             </div>
           </div>
         </div>
       </div>
+      // </div>
     );
   }
 

@@ -7,6 +7,10 @@ import { userAtom } from "./useAtoms";
 import Ladder from "./components/ladder";
 import Join from "./components/join";
 import { players } from "./data/players";
+import Auth from "./components/registLogin";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "react-hot-toast";
+import { currentViewAtom, ViewType } from '@/app/viewAtoms';
 
 // Define types
 interface DatetimeState {
@@ -108,6 +112,28 @@ const Home = () => {
   const [searchVisible, setSearchVisible] = useAtom(searchVisibleAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [user, setUser] = useAtom(userAtom);
+  const [currentView,setCurrentView] = useAtom(currentViewAtom);
+  // Get authentication state and functions from useAuth
+  const {  logout } = useAuth();
+
+  useEffect(() => {
+    const newTitle = {
+      // welcome: 'Home',
+      join: 'Join',
+      auth:'Register', 
+      ladder: 'Ladder',
+      profile: 'Profile'
+    }[currentView];
+    
+    if (newTitle) setPageTitle(newTitle);
+  }, [currentView]);
+  
+  useEffect(() => {
+    // Always keep activeHtml in sync with currentView
+    if (currentView !== activeHtml) {
+      setActiveHtml(currentView);
+    }
+  }, [activeHtml, currentView, setActiveHtml]);
 
   const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
@@ -140,6 +166,7 @@ const Home = () => {
   const handleSideNavClick = (pageName: string, title: string) => {
     setSidebarActive(false);
     setActiveHtml(pageName || "welcome");
+    setCurrentView(pageName as ViewType);
     setPageTitle(title);
   };
 
@@ -183,6 +210,32 @@ const Home = () => {
     setNavActive(!navActive);
   };
 
+  // Handle authentication action (Register or Logout)
+  const handleAuthAction = async (e: any) => {
+    e.preventDefault();
+
+    if (user && user.emailVerified) {
+      // User is logged in, handle logout
+      const success = await logout();
+      if (success) {
+        toast.success("Logged out successfully");
+        // Force update the user state to ensure UI updates immediately
+        // setUser(null);
+        setUser({
+          id: "",
+          name: "",
+          age: 0,
+          email: "",
+        })
+        // Redirect to home after logout
+        handleSideNavClick("ladder", "Ladder");
+      }
+    } else {
+      // User is not logged in, navigate to register
+      handleSideNavClick("register", "Register");
+    }
+  };
+
   return (
     <div className="mobile-wrap">
       <div className="mobile clearfix">
@@ -216,9 +269,20 @@ const Home = () => {
           ></div>
           <div className="sidebar-content">
             <div className="top-head">
-              <div className="name">Mohan Khadka</div>
-              <div className="email">contact@mohankhadka.com.np</div>
+              {user && user.emailVerified ? (
+                <>
+                  <div className="name">{user.name}</div>
+                  <div className="email">{user.email}</div>
+                </>
+              ) : (
+                <div className="small-info-text mb-4">
+                  Welcome to Pickleball! 
+                 <br/> You need to Login or Register.
+                   
+                </div>
+              )}
             </div>
+
             <div className="nav-left">
               <a
                 href="#ladder"
@@ -283,7 +347,7 @@ const Home = () => {
               >
                 <span className="ion-ios-information-outline"></span> Credits
               </a>
-              <a
+              {/* <a
                 href="#login"
                 onClick={(e) => {
                   e.preventDefault();
@@ -308,20 +372,25 @@ const Home = () => {
                   handleSideNavClick("login", "Login");
                 }}
               >
-                <span className="ion-log-in"></span> Login
+                <span className="ion-ios-user-outline"></span> Credits
               </a>
-              <a
-                href="#logout"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSideNavClick("logout", "Logout");
-                }}
-              >
-                <span className="ion-log-out"></span> Logout
-              </a> */}
               {/* <Link href="/register">
                 <span className="ion-ios-information-outline"></span> Register
               </Link> */}
+
+              <a
+                href={user && user.emailVerified ? "#logout" : "#register"}
+                onClick={handleAuthAction}
+              >
+                <span
+                  className={
+                    user && user.emailVerified
+                      ? "ion-ios-locked-outline"
+                      : "ion-ios-unlocked-outline"
+                  }
+                ></span>
+                {user && user.emailVerified ? "Logout" : "Login"}
+              </a>
             </div>
           </div>
         </div>
@@ -401,6 +470,14 @@ const Home = () => {
             className={`html join ${activeHtml === "join" ? "visible" : ""}`}
           >
             <Join />
+          </div>
+
+          <div
+            className={`html register ${
+              activeHtml === "register" || activeHtml === "auth" ? "visible" : ""
+            }`}
+          >
+            <Auth />
           </div>
           <div
             className={`html compose ${
