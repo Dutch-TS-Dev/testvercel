@@ -1,8 +1,24 @@
 @import "tailwindcss";
 
-:root {
+html {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Subtle gradients with red, orange and yellow mix */
+  --gradient-red-subtle-1: linear-gradient(45deg, #f24833, #f27a4d);
+  --gradient-red-subtle-2: linear-gradient(to right, #f25833, #f2775f);
+  --gradient-red-subtle-3: linear-gradient(
+    135deg,
+    rgba(242, 88, 51, 0.95),
+    rgba(242, 122, 77, 0.85)
+  );
+  --gradient-red-subtle-4: linear-gradient(to bottom, #f26633, #e65a2e);
+  --gradient-red-subtle-5: linear-gradient(
+    to right,
+    rgba(242, 77, 51, 0.9),
+    rgba(242, 122, 77, 0.9)
+  );
+  --gradient-red-subtle-6: linear-gradient(60deg, #f25833, #f2774d, #f27033);
 }
 
 @theme inline {
@@ -680,28 +696,41 @@ body {
   height: 40px;
   overflow: hidden;
   border-radius: 50%;
-  border: 2px solid #fff;
-  text-shadow: 1px 1px 2px black;
-  box-shadow: inset 1px 1px 2px 0px black;
 }
 
 .ladder .player:nth-child(1) .photo {
-  color: gold;
+  /* color: gold; */
   border-color: gold;
-  background-image: linear-gradient(45deg, gold, transparent 45%, gold);
+  background-image: var(--gradient-red-subtle-3);
 }
 
 .ladder .player:nth-child(2) .photo {
-  color: silver;
+  /* color: silver; */
+  border-color: silver;
+  background-image: var(--gradient-red-subtle-2);
+}
+
+.ladder .player:nth-child(3) .photo {
+  /* color: #cd7f32; */
+  border-color: #cd7f32;
+  background-image: linear-gradient(45deg, #cd7f32, transparent 45%, #cd7f32);
+}
+
+/* 
+.ladder .player:nth-child(1) .photo {
+  border-color: gold;
+  background-image: (--gradient-red-subtle-1);
+}
+
+.ladder .player:nth-child(2) .photo {
   border-color: silver;
   background-image: linear-gradient(45deg, silver, transparent 45%, silver);
 }
 
 .ladder .player:nth-child(3) .photo {
-  color: #cd7f32;
   border-color: #cd7f32;
   background-image: linear-gradient(45deg, #cd7f32, transparent 45%, #cd7f32);
-}
+} */
 
 .ladder .players .desc {
   margin-left: 15px;
@@ -1307,7 +1336,6 @@ body {
   -webkit-animation-duration: 0.4s;
   animation-duration: 0.4s;
 }
-
 
 /* Input field styling */
 .register .forms .group input {

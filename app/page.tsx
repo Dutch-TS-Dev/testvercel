@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
 import { userAtom } from "./useAtoms";
 import Ladder from "./components/ladder";
@@ -10,7 +10,7 @@ import { players } from "./data/players";
 import Auth from "./components/registLogin";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
-import { currentViewAtom, ViewType } from '@/app/viewAtoms';
+import { currentViewAtom, ViewType } from "@/app/viewAtoms";
 
 // Define types
 interface DatetimeState {
@@ -104,7 +104,7 @@ const updateDatetime = () => {
 
 const Home = () => {
   // Jotai state hooks
-  const [datetime, setDatetime] = useAtom(datetimeAtom);
+
   const [activeHtml, setActiveHtml] = useAtom(activeHtmlAtom);
   const [pageTitle, setPageTitle] = useAtom(pageTitleAtom);
   const [sidebarActive, setSidebarActive] = useAtom(sidebarActiveAtom);
@@ -112,22 +112,23 @@ const Home = () => {
   const [searchVisible, setSearchVisible] = useAtom(searchVisibleAtom);
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const [user, setUser] = useAtom(userAtom);
-  const [currentView,setCurrentView] = useAtom(currentViewAtom);
+  const [currentView, setCurrentView] = useAtom(currentViewAtom);
+
   // Get authentication state and functions from useAuth
-  const {  logout } = useAuth();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const newTitle = {
       // welcome: 'Home',
-      join: 'Join',
-      auth:'Register', 
-      ladder: 'Ladder',
-      profile: 'Profile'
+      join: "Join",
+      auth: "Register",
+      ladder: "Ladder",
+      profile: "Profile",
     }[currentView];
-    
+
     if (newTitle) setPageTitle(newTitle);
   }, [currentView]);
-  
+
   useEffect(() => {
     // Always keep activeHtml in sync with currentView
     if (currentView !== activeHtml) {
@@ -136,20 +137,6 @@ const Home = () => {
   }, [activeHtml, currentView, setActiveHtml]);
 
   const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
-
-  // Initialize and update datetime
-  useEffect(() => {
-    // Initial datetime update
-    setDatetime(updateDatetime());
-
-    // Set up interval for clock
-    const intervalId = setInterval(() => {
-      setDatetime(updateDatetime());
-    }, 1000);
-
-    // Clean up interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [setDatetime]);
 
   // Event handlers
   const toggleSidebar = () => {
@@ -196,7 +183,6 @@ const Home = () => {
 
       setSearchQuery("");
     } else {
-      // Just toggle search visibility
       setNavActive(false);
       const searchInput = document.querySelector(".header .search input");
       if (searchInput) {
@@ -226,7 +212,7 @@ const Home = () => {
           name: "",
           age: 0,
           email: "",
-        })
+        });
         // Redirect to home after logout
         handleSideNavClick("ladder", "Ladder");
       }
@@ -237,14 +223,20 @@ const Home = () => {
   };
 
   return (
-    <div className="mobile-wrap">
+    <div className={`mobile-wrap relative`}>
+      {/* <div className={`mobile-wrap relative ${getRandomPosition()}`}> */}
+      {/* <div className={`mobile-wrap relative right-[${getRandomPosition()}px] `}> */}
+      {/* <div className="mobile-wrap"> */}
       <div className="mobile clearfix">
         <div className="header">
-          <span className="ion-ios-navicon pull-left" onClick={toggleSidebar}>
+          <span
+            className="cursor-pointer ion-ios-navicon pull-left"
+            onClick={toggleSidebar}
+          >
             <i></i>
           </span>
           <span className="title">{pageTitle}</span>
-          <span
+          {/* <span
             className="ion-ios-search pull-right"
             onClick={toggleSearch}
           ></span>
@@ -258,7 +250,7 @@ const Home = () => {
                 onChange={handleSearchChange}
               />
             </form>
-          </div>
+          </div> */}
         </div>
         <div className={`sidebar ${sidebarActive ? "active" : ""}`}>
           <div
@@ -276,9 +268,8 @@ const Home = () => {
                 </>
               ) : (
                 <div className="small-info-text mb-4">
-                  Welcome to Pickleball! 
-                 <br/> You need to Login or Register.
-                   
+                  Welcome to Pickleball!
+                  <br /> You need to Login or Register.
                 </div>
               )}
             </div>
@@ -474,7 +465,9 @@ const Home = () => {
 
           <div
             className={`html register ${
-              activeHtml === "register" || activeHtml === "auth" ? "visible" : ""
+              activeHtml === "register" || activeHtml === "auth"
+                ? "visible"
+                : ""
             }`}
           >
             <Auth />
@@ -527,12 +520,12 @@ const Home = () => {
               <a href="#" className="tab active">
                 Players
               </a>
-              <a href="#" className="tab">
+              {/* <a href="#" className="tab">
                 Messages
               </a>
               <a href="#" className="tab">
                 Groups
-              </a>
+              </a> */}
             </div>
 
             <div className="players">

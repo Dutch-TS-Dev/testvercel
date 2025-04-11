@@ -45,49 +45,38 @@ const Ladder: React.FC<LadderProps> = ({
     }
   };
 
-  // Logik für die random Farbe des Playerfotos
   const getRandomColor = () => {
-    // return "#" + Math.floor(Math.random() * 16777215).toString(16);
     const colors = [
-      "#86B084", // Original color
-      "#7DA3B9", // Blue-gray
-      "#B08679", // Dusty rose
-      "#A186B0", // Lavender
-      "#B0A186", // Tan
-      "#79B086", // Seafoam
-      "#86B079", // Sage
-      "#B079A1", // Mauve
-      "#79A1B0", // Steel blue
-      "#A1B079", // Olive
-      "#B69C78", // Camel
-      "#78B69C", // Teal
-      "#9C78B6", // Periwinkle
-      "#B69C78", // Tan
-      "#789CB6", // Powder blue
-      "#B6789C", // Dusty pink
-      "#9CB678", // Lime
-      "#B9847A", // Terracotta
-      "#7AB986", // Mint
-      "#A37DB0", // Lilac
+      "#FF6B6B, #FFA07A", // Red to Light Salmon
+      "#FF7F50, #FFD700", // Coral to Gold
+      "#FF4500, #FFA500", // OrangeRed to Orange
+      "#FF8C00, #FFB347", // DarkOrange to Light Orange
+      "#FF6347, #FFCC00", // Tomato to Yellow
+      "#FF7043, #FFB74D", // Deep Orange to Amber
+      "#FF5722, #FFC107", // Deep Orange to Amber
+      "#FF4500, #FFD700", // OrangeRed to Gold
+      "#FF6B6B, #FFD700", // Red to Gold
+      "#FF7F50, #FFA500", // Coral to Orange
+      "#FF5733, #FFC300", // Bright Red-Orange to Yellow
+      "#FF4E50, #FFBD69", // Red-Pink to Light Orange
     ];
     const randomIndex = Math.floor(Math.random() * colors.length);
-
-    return colors[randomIndex];
+    return colors[randomIndex].split(", ");
   };
 
   const photoRef = useRef<HTMLDivElement | null>(null);
-  const colorRef = useRef<string | null>(null);
+  const colorRef = useRef<string[] | null>(null);
 
   useEffect(() => {
     if (!colorRef.current) {
       colorRef.current = getRandomColor();
     }
     if (photoRef.current && colorRef.current && playerRank > 3) {
-      const color = colorRef.current;
-      const photoStyle = photoRef.current.style;
-      photoStyle.backgroundImage = `linear-gradient(45deg, ${color}, transparent 45%, ${color})`;
-      photoStyle.borderColor = color;
-      photoStyle.color = color;
+      // const color = colorRef.current;
+      // const photoStyle = photoRef.current.style;
+      // photoStyle.backgroundImage = `linear-gradient(45deg, ${color}, transparent 45%, ${color})`;
+      // photoStyle.borderColor = color;
+      // photoStyle.color = color;
     }
   }),
     [];
