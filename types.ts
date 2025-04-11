@@ -1,3 +1,7 @@
+export enum COLLECTIONS {
+  PLAYERS = "PLAYERS",
+}
+
 export type Player = {
   id: string;
   name: string;
@@ -44,6 +48,16 @@ export type Round = {
   matchType: MATCH_TYPE;
   ranking: Array<string>; // ranked ids
   matchIds: Array<string>;
+};
+
+export enum INVITATION_STATUS {
+  PENDING = "PENDING",
+  ACCEPTED = "ACCEPTED",
+  REJECTED = "REJECTED",
+}
+
+export type Invitation = {
+  expiresAt: Date;
 };
 
 // Story:

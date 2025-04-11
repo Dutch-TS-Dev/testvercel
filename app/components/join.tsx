@@ -1,17 +1,29 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAtom, atom, useSetAtom } from "jotai";
 import { userAtom } from "../useAtoms";
-import { Player } from "@/types";
+import { Player, INVITATION_STATUS, COLLECTIONS } from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
-import {authModeAtom,currentViewAtom} from "@/app/viewAtoms";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/db";
+import { authModeAtom, currentViewAtom } from "@/app/viewAtoms";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db, getDocument, setDocument, uuid } from "@/db";
+import { toast } from "react-hot-toast"; // Make sure to install this package
+
+// Import the sendMail function
+import { sendMail } from "@/lib/mailer";
 
 // Component types
 type GameType = "SINGLES" | "DOUBLES" | null;
+type InvitationStatus = "none" | "pending" | "accepted" | "rejected";
 
 // Form input types
 interface JoinFormInputs {
@@ -19,29 +31,45 @@ interface JoinFormInputs {
   partnerEmail: string;
 }
 
+interface InvitationData {
+  teamName: string;
+  gameType: GameType;
+  inviterId: string;
+  inviterName: string;
+  inviterEmail: string;
+  partnerId: string;
+  partnerEmail: string;
+  partnerName: string;
+  status: INVITATION_STATUS;
+  createdAt: any; // Use appropriate type for Firestore timestamp
+  expiresAt: Date;
+}
+
 // Jotai atoms for form state
 const gameTypeAtom = atom<GameType>(null);
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
+const invitationStatusAtom = atom<InvitationStatus>("none");
 
-
-// export const authModeAtom = atom<'login' | 'register'>('login');
-
-interface JoinPageProps { }
+interface JoinPageProps {}
 
 // Join Page Component
 const JoinPage: React.FC<JoinPageProps> = () => {
   const [user] = useAtom(userAtom);
   const [gameType, setGameType] = useAtom(gameTypeAtom);
   const [step, setStep] = useAtom(stepAtom);
-  const router = useRouter(); // Use Next.js router to handle navigation
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [invitationStatus, setInvitationStatus] = useAtom(invitationStatusAtom);
+  const [partnerName, setPartnerName] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   const setCurrentView = useSetAtom(currentViewAtom);
-const setAuthMode = useSetAtom(authModeAtom);
+  const setAuthMode = useSetAtom(authModeAtom);
 
   // React Hook Form setup
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<JoinFormInputs>({
     defaultValues: {
@@ -50,52 +78,189 @@ const setAuthMode = useSetAtom(authModeAtom);
     },
   });
 
+  // Check for existing invitations when component mounts
+  useEffect(() => {
+    if (user?.id) {
+      checkExistingInvitations();
+    }
+  }, [user]);
+
+  // Function to check if the user has any pending invitations
+  const checkExistingInvitations = async () => {
+    setIsLoading(true);
+    try {
+      // Check invitations where the user is the inviter
+      const invitationsRef = collection(db, "teamInvitations");
+      const inviterQuery = query(
+        invitationsRef,
+        where("inviterId", "==", user.id),
+        where("status", "in", [
+          INVITATION_STATUS.PENDING,
+          "accepted",
+          "rejected",
+        ])
+      );
+
+      const inviterSnapshot = await getDocs(inviterQuery);
+
+      if (!inviterSnapshot.empty) {
+        // Get the most recent invitation
+        let latestInvitation: InvitationData | null = null;
+        let latestTimestamp = new Date(0);
+
+        inviterSnapshot.forEach((doc) => {
+          const data = doc.data() as InvitationData;
+          const createdAt = data.createdAt?.toDate() || new Date(0);
+          if (createdAt > latestTimestamp) {
+            latestInvitation = data;
+            latestTimestamp = createdAt;
+          }
+        });
+
+        if (latestInvitation) {
+          setPartnerName(
+            latestInvitation.partnerName || latestInvitation.partnerEmail
+          );
+          setInvitationStatus(latestInvitation.status as InvitationStatus);
+          setGameType("DOUBLES"); // Since we found an invitation, set game type to DOUBLES
+        }
+      } else {
+        // Check if user is a partner in any accepted invitation
+        const partnerQuery = query(
+          invitationsRef,
+          where("partnerId", "==", user.id),
+          where("status", "==", "accepted")
+        );
+
+        const partnerSnapshot = await getDocs(partnerQuery);
+
+        if (!partnerSnapshot.empty) {
+          const partnerInvitation =
+            partnerSnapshot.docs[0].data() as InvitationData;
+          setPartnerName(
+            partnerInvitation.inviterName || partnerInvitation.inviterEmail
+          );
+          setInvitationStatus("accepted");
+          setGameType("DOUBLES");
+        } else {
+          setInvitationStatus("none");
+        }
+      }
+    } catch (error) {
+      console.error("Error checking existing invitations:", error);
+      toast.error("An error occurred while checking your invitations.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const onSubmit: SubmitHandler<JoinFormInputs> = async (data) => {
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    debugger;
     // Check if partner email is the same as current user's email
     if (user?.email === data.partnerEmail) {
-      // You might want to add a more user-friendly error handling
-      alert("You cannot be your own partner!");
+      toast.error("You cannot be your own partner!");
+      setIsSubmitting(false);
       return;
     }
-  
+
     try {
-      // Query Firestore to find the partner by email
-      const playersRef = collection(db, 'players');
-      const q = query(playersRef, 
-        where('email', '==', data.partnerEmail),
-        where('emailVerified', '==', true)
-      );
-  
-      const querySnapshot = await getDocs(q);
-  
-      if (querySnapshot.empty) {
-        // No verified player found with this email
-        alert("No verified player found with this email!");
+      // Query Firebase Auth to find the partner by email
+      const { getAuth } = await import("firebase/auth");
+      const auth = getAuth();
+      const fetchSignInMethodsForEmail = (await import("firebase/auth"))
+        .fetchSignInMethodsForEmail;
+      debugger;
+      // Check if the email exists in Firebase Auth
+      const methods = await fetchSignInMethodsForEmail(auth, data.partnerEmail);
+
+      if (methods.length === 0) {
+        toast.error("No verified player found with this email!");
+        setIsSubmitting(false);
         return;
       }
-  
-      // Get the partner's document
-      const partnerDoc = querySnapshot.docs[0];
-      const partnerData = partnerDoc.data() as Player;
-  
-      // Additional checks can be added here 
-      // For example, check if the partner is already in a team, etc.
-  
-      // If all checks pass, proceed with form submission
-      console.log({
-        gameType,
-        user,
-        teamName: data.teamName,
-        partnerEmail: data.partnerEmail,
-        partnerId: partnerDoc.id
+
+      // Get partner profile from Firestore after confirming they exist in Auth
+      const partnerPlayer = await getDocument<Player>(COLLECTIONS.PLAYERS, {
+        email: data.partnerEmail,
       });
-  
-      // Move to confirmation step
+
+      if (!partnerPlayer) {
+        toast.error(
+          "Player exists but profile is incomplete. Please try again later."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const toastId = toast.loading("Sending invitation...");
+
+      const invite = {
+        id: uuid(),
+        teamName: data.teamName,
+        gameType: gameType,
+        inviterId: user.id,
+        inviterName: user.name,
+        inviterEmail: user.email,
+        partnerId: partnerPlayer.id,
+        partnerEmail: data.partnerEmail,
+        partnerName: partnerPlayer.name,
+        status: "pending",
+        createdAt: serverTimestamp(),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expires in 7 days
+      };
+      await setDocument(COLLECTIONS.PLAYERS, invite);
+
+      const invitationId = invite.id;
+
+      // Generate confirmation/rejection links
+      const baseUrl = window.location.origin;
+      const confirmUrl = `${baseUrl}/teamInvitation?id=${invitationId}&action=confirm`;
+      const rejectUrl = `${baseUrl}/teamInvitation?id=${invitationId}&action=reject`;
+      debugger;
+      // Send email to partner
+      sendMail({
+        from:
+          process.env.NEXT_PUBLIC_EMAIL_FROM || "noreply@pickleball-ladder.com",
+        to: data.partnerEmail,
+        subject: `Team Invitation: ${
+          user.name || user.email
+        } wants you to join their pickleball team!`,
+        text: `
+Hello ${partnerPlayer.name || partnerPlayer.email},
+
+${user.name || user.email} has invited you to join their pickleball team "${
+          data.teamName
+        }" for the upcoming ladder competition.
+
+To accept this invitation, please click here: ${confirmUrl}
+
+To decline this invitation, please click here: ${rejectUrl}
+
+This invitation will expire in 7 days.
+
+Best regards,
+The Pickleball Ladder Team
+        `,
+        attachments: [],
+      });
+
+      toast.success("Invitation sent successfully!", { id: toastId });
+      console.log("Team invitation sent successfully to", data.partnerEmail);
+
+      // Update invitation status and move to confirmation step
+      setInvitationStatus("pending");
+      setPartnerName(partnerPlayer.name || partnerPlayer.email);
       setStep(3);
-  
     } catch (error) {
-      console.error("Error checking partner email:", error);
-      alert("An error occurred while validating the partner's email.");
+      console.error("Error creating team invitation:", error);
+      toast.error(
+        "An error occurred while sending the invitation. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -116,43 +281,121 @@ const setAuthMode = useSetAtom(authModeAtom);
   // Navigate to home without the flash
   const navigateToHome = () => {
     // Reset form state first
-    setStep(1);
+    // setStep(1);
     setGameType(null);
     reset();
 
     // Use Next.js router for smooth navigation
-    router.push("/");
+    // router.push("/");
+    window.location.href = "/";
+  };
+
+  // Render invitation status message
+  const renderInvitationStatusMessage = () => {
+    switch (invitationStatus) {
+      case "pending":
+        return (
+          <div className="invitation-status pending flipInX animated mt-[30px]  small-info-text">
+            <p className="text-center">
+              Your partner has not confirmed the invitation yet. Please wait.
+            </p>
+            <div className="action flipInY animated">
+              <button className="btn" onClick={navigateToHome}>
+                Return to Home
+              </button>
+            </div>
+          </div>
+        );
+      case "accepted":
+        return (
+          <div className="invitation-status accepted flipInX animated mt-[30px] small-info-text">
+            <p className="text-center">
+              You have already formed a team with {partnerName}. At the moment,
+              you cannot change your partner.
+            </p>
+            <div className="action flipInY animated">
+              <button className="btn" onClick={navigateToHome}>
+                Return to Home
+              </button>
+            </div>
+          </div>
+        );
+      case "rejected":
+        return (
+          <div className="invitation-status rejected flipInX animated mt-[30px] small-info-text">
+            <p className="text-center">
+              Your partner has rejected the invitation. You can look for a new
+              partner.
+            </p>
+            <div className="action flipInY animated">
+              <button
+                className="btn"
+                onClick={() => {
+                  setInvitationStatus("none");
+                  setStep(2);
+                }}
+              >
+                Invite New Partner
+              </button>
+              <button
+                className="btn btn-secondary mt-2"
+                onClick={navigateToHome}
+              >
+                Return to Home
+              </button>
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   // If user is not logged in, show login message
   if (!user || !user.id) {
     return (
-      // <div className="mobile-wrap">
       <div className="mobile clearfix">
         <div className="header">
           <span className="title">Join Ladder</span>
         </div>
         <div className="content">
           <div className="html visible">
-            <div className="mt-[15px] ml-[15px] small-info-text bounceInDown animated small-info-text">
+            <div className="mt-[15px] ml-[15px] small-info-text bounceInDown animated ">
               Not Logged In
             </div>
             <p className="ml-[15px] flipInX animated small-info-text">
               Please login first to join the ladder competition.
             </p>
             <div className="action flipInY animated">
-              <button className="btn" onClick={() => {
-                setAuthMode('login');
-                setCurrentView('auth');
-                // router.push("/login");
-              }}>
+              <button
+                className="btn"
+                onClick={() => {
+                  setAuthMode("login");
+                  setCurrentView("auth");
+                  // toast.info("Please log in to continue");
+                }}
+              >
                 Go to Login
               </button>
             </div>
           </div>
         </div>
       </div>
-      // </div>
+    );
+  }
+
+  // Show loading indicator while checking invitations
+  if (isLoading) {
+    return (
+      <div className="mobile-wrap join">
+        <div className="html visible">
+          <div className="title bounceInDown animated">Loading</div>
+          <div className="loading-content flipInX animated text-center">
+            <p>Checking your invitation status...</p>
+            {/* You can add a spinner here if desired */}
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -213,7 +456,14 @@ const setAuthMode = useSetAtom(authModeAtom);
 
             <div className="action flipInY animated">
               <button
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  if (invitationStatus !== "none" && gameType === "DOUBLES") {
+                    // Skip to invitation status screen if there's an existing invitation
+                    setStep(2);
+                  } else {
+                    setStep(2);
+                  }
+                }}
                 disabled={!gameType}
                 className={`btn ${!gameType ? "btn-disabled" : ""}`}
               >
@@ -247,6 +497,9 @@ const setAuthMode = useSetAtom(authModeAtom);
                 </button>
               </div>
             </div>
+          ) : invitationStatus !== "none" ? (
+            // Show status message if user has an existing invitation
+            renderInvitationStatusMessage()
           ) : (
             <div className="flipInX animated">
               <div className="form-container">
@@ -306,10 +559,12 @@ const setAuthMode = useSetAtom(authModeAtom);
                         className="btn"
                         disabled={isSubmitting}
                       >
-                        {isSubmitting ? "Submitting..." : "Submit"}
+                        {isSubmitting
+                          ? "Sending invitation..."
+                          : "Send Invitation"}
                       </button>
                     </div>
-                    <div className="action flipInY animated back-button">
+                    <div className="action flipInY animated back-button mt-0!">
                       <button
                         type="button"
                         className="btn btn-secondary"
@@ -332,21 +587,26 @@ const setAuthMode = useSetAtom(authModeAtom);
       {/* Step 3: Confirmation */}
       {step === 3 && (
         <div className="html visible">
-          <div className="title bounceInDown animated">
-            Registration Complete
-          </div>
+          <div className="title bounceInDown animated">Invitation Sent</div>
           <div className="confirmation-content flipInX animated">
             <p>
-              Good news! The email you gave is registered with us and we have
-              sent a notification. As soon as they confirm by email, your team
-              will be registered for the upcoming ladder round.
+              Good news! The invitation has been sent to your partner's email
+              address.
             </p>
             <p>
-              As soon as they accept, both of you will receive a confirmation
-              email.
+              As soon as they accept the invitation, both of you will receive a
+              confirmation email. If they decline, you'll be notified so you can
+              invite someone else.
             </p>
+            <p>The invitation will expire in 7 days if no action is taken.</p>
             <div className="action flipInY animated">
-              <button className="btn" onClick={navigateToHome}>
+              <button
+                className="btn"
+                onClick={() => {
+                  navigateToHome();
+                  // toast.success("Successfully returned to home");
+                }}
+              >
                 Return to Home
               </button>
             </div>
