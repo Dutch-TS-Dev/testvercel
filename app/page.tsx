@@ -372,6 +372,7 @@ const Home = () => {
               <a
                 href={user && user.emailVerified ? "#logout" : "#register"}
                 onClick={handleAuthAction}
+                className={user && user.emailVerified ? "sign-out-link" : ""}
               >
                 <span
                   className={
@@ -380,7 +381,9 @@ const Home = () => {
                       : "ion-ios-unlocked-outline"
                   }
                 ></span>
-                {user && user.emailVerified ? "Logout" : "Login"}
+                <span className="sign-out-text">
+                  {user && user.emailVerified ? "Sign Out" : "Login"}
+                </span>
               </a>
             </div>
           </div>

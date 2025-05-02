@@ -10,10 +10,10 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAtom } from "jotai";
-import { userAtom } from "@/app/useAtoms";
+import { userAtom, store } from "@/app/useAtoms";
 import * as Types from "@/types";
 
-// Default user structure
+// Use the DEFAULT_USER from the global store
 const DEFAULT_USER: Types.Player = {
   id: "",
   name: "",
@@ -28,57 +28,8 @@ export const useAuth = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [verificationSent, setVerificationSent] = useState<boolean>(false);
 
-  const [_, setJotaiUser] = useAtom(userAtom);
-
-  useEffect(() => {
-    const testAuthFlow = async () => {
-      const email = "johndoenl24@gmail.com"; // Replace with existing user email
-      const password = "123456"; // Replace with existing user password
-
-      console.log("Attempting to log in...");
-      const loggedInUser = await login(email, password);
-
-      console.log("logged: loggedInUser", loggedInUser);
-
-      if (loggedInUser) {
-        console.log("✅ Login successful:", loggedInUser.email);
-        console.log("Email verified:", loggedInUser.emailVerified);
-      } else {
-        console.log("❌ Login failed:", error);
-      }
-
-      // const testEmail = "a@ceee.com";
-      // const testPassword = "test1234";
-      // const testName = "Test User";
-      // const testAge = 30;
-      // console.log("pppp");
-      // console.log("🔄 Registering...");
-      // const newUser = await register(
-      //   testEmail,
-      //   testPassword,
-      //   testName,
-      //   testAge
-      // );
-      // console.log("logged: newUser", newUser);
-      // if (!newUser) {
-      //   console.log("❌ Registration failed (maybe email already in use)");
-      //   return;
-      // }
-      // console.log("✅ Registered:", newUser.email);
-      // // Optional: wait for email verification in real case
-      // console.log("🔒 Logging out...");
-      // await logout();
-      // console.log("🔐 Logging in again...");
-      // const loggedInUser = await login(testEmail, testPassword);
-      // if (loggedInUser) {
-      //   console.log("✅ Successfully logged in:", loggedInUser.email);
-      // } else {
-      //   console.log("❌ Login failed (maybe email not verified)");
-      // }
-    };
-
-    // testAuthFlow();
-  }, []);
+  // Use the global userAtom from the store
+  const [globalUser, setGlobalUser] = useAtom(userAtom);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -101,22 +52,22 @@ export const useAuth = () => {
             emailVerified: currentUser.emailVerified,
           };
 
-          setJotaiUser(completeUserData);
+          setGlobalUser(completeUserData);
         } catch (err) {
           console.error("Error fetching user data:", err);
-          setJotaiUser({
+          setGlobalUser({
             ...DEFAULT_USER,
             id: currentUser.uid,
             emailVerified: currentUser.emailVerified,
           });
         }
       } else {
-        setJotaiUser(DEFAULT_USER);
+        setGlobalUser(DEFAULT_USER);
       }
     });
 
     return () => unsubscribe();
-  }, [setJotaiUser]);
+  }, [setGlobalUser]);
 
   const register = async (
     email: string,
@@ -147,7 +98,7 @@ export const useAuth = () => {
         createdAt: new Date().toISOString(),
       });
 
-      setJotaiUser(player);
+      setGlobalUser(player);
       await sendEmailVerification(currentUser);
       setVerificationSent(true);
 
@@ -165,7 +116,6 @@ export const useAuth = () => {
   };
 
   const login = async (email: string, password: string) => {
-    debugger;
     setLoading(true);
     setError("");
     try {
@@ -175,7 +125,6 @@ export const useAuth = () => {
         password
       );
 
-      console.log("logged: currentUser", userCredential);
       const currentUser = userCredential.user;
 
       if (!currentUser.emailVerified) {
@@ -202,7 +151,7 @@ export const useAuth = () => {
       };
 
       await setDoc(doc(db, "players", currentUser.uid), updatedUserData);
-      setJotaiUser(updatedUserData);
+      setGlobalUser(updatedUserData);
 
       return currentUser;
     } catch (err: any) {
@@ -217,7 +166,7 @@ export const useAuth = () => {
     setLoading(true);
     try {
       await signOut(auth);
-      setJotaiUser(DEFAULT_USER);
+      setGlobalUser(DEFAULT_USER);
       return true;
     } catch (err: any) {
       setError(err.message || "Logout failed. Please try again later.");

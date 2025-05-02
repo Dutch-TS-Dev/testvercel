@@ -85,7 +85,16 @@ const LadderRow: React.FC<LadderProps> = ({
     <div
       className={`player clearfix rotateInDown${animationDirection} animated`}
     >
-      <div className="photo pull-left" ref={photoRef}>
+      <div
+        className="photo pull-left"
+        ref={photoRef}
+        style={{
+          border: "2px solid #FF6B00",
+          borderRadius: "50%",
+          backgroundColor: "#FFF",
+          color: "#333",
+        }}
+      >
         {teamName === "UnKnown Team" ? "?" : teamName.slice(0, 1)}
       </div>
       <div className="desc pull-left">

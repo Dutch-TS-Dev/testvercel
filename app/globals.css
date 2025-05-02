@@ -1376,3 +1376,19 @@ body {
 button {
   cursor: pointer;
 }
+
+/* Sign Out Link styling
+.sign-out-link {
+  font-weight: 500;
+  color: #fff !important;
+}
+
+.sign-out-text {
+  position: relative;
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.sign-out-link:hover .sign-out-text {
+  text-decoration: underline;
+} */
