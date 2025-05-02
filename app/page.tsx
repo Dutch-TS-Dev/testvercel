@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
+import { atom, useAtom } from "jotai";
 import { userAtom } from "./useAtoms";
 import LadderRow from "./components/ladderRow";
 import Join from "./components/join";
@@ -381,9 +381,8 @@ const Home = () => {
                       : "ion-ios-unlocked-outline"
                   }
                 ></span>
-                <span className="sign-out-text">
-                  {user && user.emailVerified ? "Sign Out" : "Login"}
-                </span>
+
+                {user && user.emailVerified ? "Sign Out" : "Login"}
               </a>
             </div>
           </div>

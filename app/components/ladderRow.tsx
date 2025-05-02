@@ -48,39 +48,6 @@ const LadderRow: React.FC<LadderProps> = ({
     }
   };
 
-  const getRandomColor = () => {
-    const colors = [
-      "#FF6B6B, #FFA07A", // Red to Light Salmon
-      "#FF7F50, #FFD700", // Coral to Gold
-      "#FF4500, #FFA500", // OrangeRed to Orange
-      "#FF8C00, #FFB347", // DarkOrange to Light Orange
-      "#FF6347, #FFCC00", // Tomato to Yellow
-      "#FF7043, #FFB74D", // Deep Orange to Amber
-      "#FF5722, #FFC107", // Deep Orange to Amber
-      "#FF4500, #FFD700", // OrangeRed to Gold
-      "#FF6B6B, #FFD700", // Red to Gold
-      "#FF7F50, #FFA500", // Coral to Orange
-      "#FF5733, #FFC300", // Bright Red-Orange to Yellow
-      "#FF4E50, #FFBD69", // Red-Pink to Light Orange
-    ];
-    const randomIndex = Math.floor(Math.random() * colors.length);
-    return colors[randomIndex].split(", ");
-  };
-
-  // useEffect(() => {
-  //   if (!colorRef.current) {
-  //     colorRef.current = getRandomColor();
-  //   }
-  //   if (photoRef.current && colorRef.current && playerRank > 3) {
-  //     // const color = colorRef.current;
-  //     // const photoStyle = photoRef.current.style;
-  //     // photoStyle.backgroundImage = `linear-gradient(45deg, ${color}, transparent 45%, ${color})`;
-  //     // photoStyle.borderColor = color;
-  //     // photoStyle.color = color;
-  //   }
-  // }),
-  //   [];
-
   return (
     <div
       className={`player clearfix rotateInDown${animationDirection} animated`}
@@ -89,10 +56,10 @@ const LadderRow: React.FC<LadderProps> = ({
         className="photo pull-left"
         ref={photoRef}
         style={{
-          border: "2px solid #FF6B00",
+          border: "1px solid rgba(242, 51, 99,0.7)",
           borderRadius: "50%",
-          backgroundColor: "#FFF",
-          color: "#333",
+
+          color: "rgb(255,255,255)",
         }}
       >
         {teamName === "UnKnown Team" ? "?" : teamName.slice(0, 1)}

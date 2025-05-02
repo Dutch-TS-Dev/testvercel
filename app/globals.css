@@ -697,24 +697,21 @@ body {
   overflow: hidden;
   border-radius: 50%;
 }
-
+/* 
 .ladder .player:nth-child(1) .photo {
-  /* color: gold; */
   border-color: gold;
   background-image: var(--gradient-red-subtle-3);
 }
 
 .ladder .player:nth-child(2) .photo {
-  /* color: silver; */
   border-color: silver;
   background-image: var(--gradient-red-subtle-2);
 }
 
 .ladder .player:nth-child(3) .photo {
-  /* color: #cd7f32; */
   border-color: #cd7f32;
   background-image: linear-gradient(45deg, #cd7f32, transparent 45%, #cd7f32);
-}
+} */
 
 /* 
 .ladder .player:nth-child(1) .photo {

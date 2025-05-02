@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAtom, atom, useSetAtom } from "jotai";
-import { userAtom } from "../useAtoms";
+import { gameTypeAtom, invitationStatusAtom, userAtom } from "../useAtoms";
 import { Player, INVITATION_STATUS, COLLECTIONS, MATCH_TYPE } from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
@@ -41,9 +41,8 @@ export interface InvitationData {
 }
 
 // Jotai atoms for form state
-const gameTypeAtom = atom<MATCH_TYPE>();
+
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
-const invitationStatusAtom = atom<INVITATION_STATUS | undefined>();
 
 interface JoinPageProps {}
 
