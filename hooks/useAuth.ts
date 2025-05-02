@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "@/db";
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   sendEmailVerification,
   User,
-  onAuthStateChanged
+  onAuthStateChanged,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAtom } from "jotai";
@@ -27,18 +27,68 @@ export const useAuth = () => {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [verificationSent, setVerificationSent] = useState<boolean>(false);
-  
+
   const [_, setJotaiUser] = useAtom(userAtom);
+
+  useEffect(() => {
+    const testAuthFlow = async () => {
+      const email = "johndoenl24@gmail.com"; // Replace with existing user email
+      const password = "123456"; // Replace with existing user password
+
+      console.log("Attempting to log in...");
+      const loggedInUser = await login(email, password);
+
+      console.log("logged: loggedInUser", loggedInUser);
+
+      if (loggedInUser) {
+        console.log("✅ Login successful:", loggedInUser.email);
+        console.log("Email verified:", loggedInUser.emailVerified);
+      } else {
+        console.log("❌ Login failed:", error);
+      }
+
+      // const testEmail = "a@ceee.com";
+      // const testPassword = "test1234";
+      // const testName = "Test User";
+      // const testAge = 30;
+      // console.log("pppp");
+      // console.log("🔄 Registering...");
+      // const newUser = await register(
+      //   testEmail,
+      //   testPassword,
+      //   testName,
+      //   testAge
+      // );
+      // console.log("logged: newUser", newUser);
+      // if (!newUser) {
+      //   console.log("❌ Registration failed (maybe email already in use)");
+      //   return;
+      // }
+      // console.log("✅ Registered:", newUser.email);
+      // // Optional: wait for email verification in real case
+      // console.log("🔒 Logging out...");
+      // await logout();
+      // console.log("🔐 Logging in again...");
+      // const loggedInUser = await login(testEmail, testPassword);
+      // if (loggedInUser) {
+      //   console.log("✅ Successfully logged in:", loggedInUser.email);
+      // } else {
+      //   console.log("❌ Login failed (maybe email not verified)");
+      // }
+    };
+
+    // testAuthFlow();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      
+
       if (currentUser) {
         try {
           const userDoc = await getDoc(doc(db, "players", currentUser.uid));
-          const userData = userDoc.exists() 
-            ? userDoc.data() as Types.Player 
+          const userData = userDoc.exists()
+            ? (userDoc.data() as Types.Player)
             : {
                 ...DEFAULT_USER,
                 id: currentUser.uid,
@@ -48,7 +98,7 @@ export const useAuth = () => {
 
           const completeUserData = {
             ...userData,
-            emailVerified: currentUser.emailVerified
+            emailVerified: currentUser.emailVerified,
           };
 
           setJotaiUser(completeUserData);
@@ -57,24 +107,33 @@ export const useAuth = () => {
           setJotaiUser({
             ...DEFAULT_USER,
             id: currentUser.uid,
-            emailVerified: currentUser.emailVerified
+            emailVerified: currentUser.emailVerified,
           });
         }
       } else {
         setJotaiUser(DEFAULT_USER);
       }
     });
-    
+
     return () => unsubscribe();
   }, [setJotaiUser]);
 
-  const register = async (email: string, password: string, name: string, age: number) => {
+  const register = async (
+    email: string,
+    password: string,
+    name: string,
+    age: number
+  ) => {
     setLoading(true);
     setError("");
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const currentUser = userCredential.user;
-      
+
       const player: Types.Player = {
         id: currentUser.uid,
         name,
@@ -87,17 +146,17 @@ export const useAuth = () => {
         ...player,
         createdAt: new Date().toISOString(),
       });
-      
+
       setJotaiUser(player);
       await sendEmailVerification(currentUser);
       setVerificationSent(true);
-      
-      return currentUser; 
+
+      return currentUser;
     } catch (err: any) {
       setError(
-        err.code === 'auth/email-already-in-use' 
-          ? 'This email is already in use.' 
-          : 'Registration failed. Please try again.'
+        err.code === "auth/email-already-in-use"
+          ? "This email is already in use."
+          : "Registration failed. Please try again."
       );
       return null;
     } finally {
@@ -106,21 +165,30 @@ export const useAuth = () => {
   };
 
   const login = async (email: string, password: string) => {
+    debugger;
     setLoading(true);
     setError("");
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      console.log("logged: currentUser", userCredential);
       const currentUser = userCredential.user;
-      
+
       if (!currentUser.emailVerified) {
         await signOut(auth);
-        setError("Please verify your email before logging in. Check your inbox.");
+        setError(
+          "Please verify your email before logging in. Check your inbox."
+        );
         return null;
       }
-      
+
       const userDoc = await getDoc(doc(db, "players", currentUser.uid));
-      const userData = userDoc.exists() 
-        ? userDoc.data() as Types.Player 
+      const userData = userDoc.exists()
+        ? (userDoc.data() as Types.Player)
         : {
             ...DEFAULT_USER,
             id: currentUser.uid,
@@ -130,12 +198,12 @@ export const useAuth = () => {
 
       const updatedUserData = {
         ...userData,
-        emailVerified: currentUser.emailVerified
+        emailVerified: currentUser.emailVerified,
       };
 
       await setDoc(doc(db, "players", currentUser.uid), updatedUserData);
       setJotaiUser(updatedUserData);
-      
+
       return currentUser;
     } catch (err: any) {
       setError("Invalid email or password. Please try again.");
@@ -159,13 +227,13 @@ export const useAuth = () => {
     }
   };
 
-  return { 
-    user, 
-    error, 
-    loading, 
+  return {
+    user,
+    error,
+    loading,
     verificationSent,
-    login, 
-    register, 
+    login,
+    register,
     logout,
   };
 };

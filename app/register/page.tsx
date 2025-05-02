@@ -8,58 +8,36 @@ import { players } from "../data/players";
 import Link from "next/link";
 
 // User class definition
-class User {
-  constructor(
-    id,
-    name,
-    email,
-    password,
-    rank = players.length + 1,
-    image = "https://raw.githubusercontent.com/khadkamhn/secret-project/master/img/usr-default.png",
-    teamId = null
-  ) {
-    this.id = id;
-    this.name = name;
-    this.email = email;
-    this.password = password;
-    this.rank = rank;
-    this.image = image;
-    this.teamId = teamId;
-  }
-}
 
 const Register = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
     watch,
+    formState: { errors },
     reset,
-  } = useForm();
+  } = useForm<RegisterFormData>();
 
   const [user, setUser] = useAtom(userAtom);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const onSubmit = (data) => {
-    try {
-      // Check if email already exists
-      const emailExists = players.some((player) => player.email === data.email);
-      if (emailExists) {
-        setErrorMessage(
-          "Email already registered. Please use a different email."
-        );
-        setSuccessMessage("");
-        return;
-      }
+  // First, let's move the interface outside the component function
+  interface RegisterFormData {
+    name: string;
+    email: string;
+    password: string;
+    confirmPassword: string;
+  }
 
-      // Create new user from User class
-      const newUser = new User(
-        `player-${Date.now()}`, // Generate a unique ID
-        data.name,
-        data.email,
-        data.password
-      );
+  const onSubmit = ({ name, email, password }: RegisterFormData) => {
+    try {
+      const newUser: any = {
+        id: `player-${Date.now()}`, // Generate a unique ID
+        name,
+        email,
+        password,
+      };
 
       // Add user to players array (in a real application, this would be a server API call)
       players.push(newUser);
@@ -217,5 +195,4 @@ const Register = () => {
     </div>
   );
 };
-
 export default Register;

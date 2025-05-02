@@ -1,5 +1,6 @@
 export enum COLLECTIONS {
   PLAYERS = "PLAYERS",
+  INVITATIONS = "INVITATIONS",
 }
 
 export type Player = {

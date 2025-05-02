@@ -9,11 +9,14 @@ interface LadderProps {
 }
 
 // Ladder-Komponente
-const Ladder: React.FC<LadderProps> = ({
+const LadderRow: React.FC<LadderProps> = ({
   playerName,
   playerTeamId,
   playerRank,
 }) => {
+  const photoRef = useRef<HTMLDivElement | null>(null);
+  const colorRef = useRef<string[] | null>(null);
+
   const team = teams.find((t) => t.id === playerTeamId);
   const teamName = team ? team.name : "UnKnown Team";
 
@@ -64,22 +67,19 @@ const Ladder: React.FC<LadderProps> = ({
     return colors[randomIndex].split(", ");
   };
 
-  const photoRef = useRef<HTMLDivElement | null>(null);
-  const colorRef = useRef<string[] | null>(null);
-
-  useEffect(() => {
-    if (!colorRef.current) {
-      colorRef.current = getRandomColor();
-    }
-    if (photoRef.current && colorRef.current && playerRank > 3) {
-      // const color = colorRef.current;
-      // const photoStyle = photoRef.current.style;
-      // photoStyle.backgroundImage = `linear-gradient(45deg, ${color}, transparent 45%, ${color})`;
-      // photoStyle.borderColor = color;
-      // photoStyle.color = color;
-    }
-  }),
-    [];
+  // useEffect(() => {
+  //   if (!colorRef.current) {
+  //     colorRef.current = getRandomColor();
+  //   }
+  //   if (photoRef.current && colorRef.current && playerRank > 3) {
+  //     // const color = colorRef.current;
+  //     // const photoStyle = photoRef.current.style;
+  //     // photoStyle.backgroundImage = `linear-gradient(45deg, ${color}, transparent 45%, ${color})`;
+  //     // photoStyle.borderColor = color;
+  //     // photoStyle.color = color;
+  //   }
+  // }),
+  //   [];
 
   return (
     <div
@@ -100,4 +100,4 @@ const Ladder: React.FC<LadderProps> = ({
   );
 };
 
-export default Ladder;
+export default LadderRow;

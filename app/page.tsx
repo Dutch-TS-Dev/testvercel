@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { atom, useAtom, useSetAtom, useAtomValue } from "jotai";
 import { userAtom } from "./useAtoms";
-import Ladder from "./components/ladder";
+import LadderRow from "./components/ladderRow";
 import Join from "./components/join";
 import { players } from "./data/players";
 import Auth from "./components/registLogin";
@@ -530,7 +530,7 @@ const Home = () => {
 
             <div className="players">
               {sortedPlayers.map((player) => (
-                <Ladder
+                <LadderRow
                   key={player.id}
                   playerName={player.name}
                   playerTeamId={player.teamId}

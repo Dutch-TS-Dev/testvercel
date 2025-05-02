@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAtom, atom, useSetAtom } from "jotai";
 import { userAtom } from "../useAtoms";
-import { Player, INVITATION_STATUS, COLLECTIONS } from "@/types";
+import { Player, INVITATION_STATUS, COLLECTIONS, MATCH_TYPE } from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { authModeAtom, currentViewAtom } from "@/app/viewAtoms";
@@ -12,28 +12,23 @@ import {
   getDocs,
   query,
   where,
-  addDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { db, getDocument, setDocument, uuid } from "@/db";
+import { db, getDocument, getDocuments, setDocument, uuid } from "@/db";
 import { toast } from "react-hot-toast"; // Make sure to install this package
 
 // Import the sendMail function
 import { sendMail } from "@/lib/mailer";
 
-// Component types
-type GameType = "SINGLES" | "DOUBLES" | null;
-type InvitationStatus = "none" | "pending" | "accepted" | "rejected";
-
 // Form input types
-interface JoinFormInputs {
+export interface JoinFormInputs {
   teamName: string;
   partnerEmail: string;
 }
 
-interface InvitationData {
+export interface InvitationData {
   teamName: string;
-  gameType: GameType;
+  matchType: MATCH_TYPE;
   inviterId: string;
   inviterName: string;
   inviterEmail: string;
@@ -46,9 +41,9 @@ interface InvitationData {
 }
 
 // Jotai atoms for form state
-const gameTypeAtom = atom<GameType>(null);
+const gameTypeAtom = atom<MATCH_TYPE>();
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
-const invitationStatusAtom = atom<InvitationStatus>("none");
+const invitationStatusAtom = atom<INVITATION_STATUS | undefined>();
 
 interface JoinPageProps {}
 
@@ -88,41 +83,49 @@ const JoinPage: React.FC<JoinPageProps> = () => {
   // Function to check if the user has any pending invitations
   const checkExistingInvitations = async () => {
     setIsLoading(true);
+
     try {
       // Check invitations where the user is the inviter
-      const invitationsRef = collection(db, "teamInvitations");
+      const invitationsRef = collection(db, COLLECTIONS.INVITATIONS);
       const inviterQuery = query(
         invitationsRef,
         where("inviterId", "==", user.id),
-        where("status", "in", [
-          INVITATION_STATUS.PENDING,
-          "accepted",
-          "rejected",
-        ])
+        where("status", "in", Object.values(INVITATION_STATUS))
       );
 
       const inviterSnapshot = await getDocs(inviterQuery);
 
       if (!inviterSnapshot.empty) {
         // Get the most recent invitation
-        let latestInvitation: InvitationData | null = null;
-        let latestTimestamp = new Date(0);
-
-        inviterSnapshot.forEach((doc) => {
-          const data = doc.data() as InvitationData;
-          const createdAt = data.createdAt?.toDate() || new Date(0);
-          if (createdAt > latestTimestamp) {
-            latestInvitation = data;
-            latestTimestamp = createdAt;
+        const invitations = await getDocuments<InvitationData>(
+          COLLECTIONS.INVITATIONS,
+          {
+            partnerId: user.id,
           }
-        });
+        );
 
-        if (latestInvitation) {
-          setPartnerName(
-            latestInvitation.partnerName || latestInvitation.partnerEmail
-          );
-          setInvitationStatus(latestInvitation.status as InvitationStatus);
-          setGameType("DOUBLES"); // Since we found an invitation, set game type to DOUBLES
+        if (invitations.length > 0) {
+          // throw new Error()
+          // support case of multiple invitations
+        }
+
+        const [invitation] = invitations;
+
+        let latestTimestamp = new Date();
+
+        // inviterSnapshot.forEach((doc) => {
+        //   const data = doc.data() as InvitationData;
+        //   const createdAt = data.createdAt?.toDate() || new Date(0);
+        //   if (createdAt > latestTimestamp) {
+        //     latestInvitation = data;
+        //     latestTimestamp = createdAt;
+        //   }
+        // });
+
+        if (invitation) {
+          setPartnerName(invitation.partnerName || invitation.partnerEmail);
+          setInvitationStatus(invitation.status as INVITATION_STATUS);
+          setGameType(MATCH_TYPE.DOUBLES); // Since we found an invitation, set game type to DOUBLES
         }
       } else {
         // Check if user is a partner in any accepted invitation
@@ -140,10 +143,10 @@ const JoinPage: React.FC<JoinPageProps> = () => {
           setPartnerName(
             partnerInvitation.inviterName || partnerInvitation.inviterEmail
           );
-          setInvitationStatus("accepted");
-          setGameType("DOUBLES");
+          setInvitationStatus(INVITATION_STATUS.ACCEPTED);
+          setGameType(MATCH_TYPE.DOUBLES);
         } else {
-          setInvitationStatus("none");
+          setInvitationStatus(undefined);
         }
       }
     } catch (error) {
@@ -251,7 +254,7 @@ The Pickleball Ladder Team
       console.log("Team invitation sent successfully to", data.partnerEmail);
 
       // Update invitation status and move to confirmation step
-      setInvitationStatus("pending");
+      setInvitationStatus(INVITATION_STATUS.PENDING);
       setPartnerName(partnerPlayer.name || partnerPlayer.email);
       setStep(3);
     } catch (error) {
@@ -265,7 +268,7 @@ The Pickleball Ladder Team
   };
 
   // Handle game type selection
-  const handleGameTypeChange = (type: GameType) => {
+  const handleGameTypeChange = (type: MATCH_TYPE) => {
     setGameType(type);
   };
 
@@ -282,7 +285,7 @@ The Pickleball Ladder Team
   const navigateToHome = () => {
     // Reset form state first
     // setStep(1);
-    setGameType(null);
+    setGameType(undefined);
     reset();
 
     // Use Next.js router for smooth navigation
@@ -293,7 +296,7 @@ The Pickleball Ladder Team
   // Render invitation status message
   const renderInvitationStatusMessage = () => {
     switch (invitationStatus) {
-      case "pending":
+      case INVITATION_STATUS.PENDING:
         return (
           <div className="invitation-status pending flipInX animated mt-[30px]  small-info-text">
             <p className="text-center">
@@ -306,7 +309,7 @@ The Pickleball Ladder Team
             </div>
           </div>
         );
-      case "accepted":
+      case INVITATION_STATUS.ACCEPTED:
         return (
           <div className="invitation-status accepted flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
@@ -320,7 +323,7 @@ The Pickleball Ladder Team
             </div>
           </div>
         );
-      case "rejected":
+      case INVITATION_STATUS.REJECTED:
         return (
           <div className="invitation-status rejected flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
@@ -331,7 +334,7 @@ The Pickleball Ladder Team
               <button
                 className="btn"
                 onClick={() => {
-                  setInvitationStatus("none");
+                  setInvitationStatus(undefined);
                   setStep(2);
                 }}
               >
@@ -436,7 +439,7 @@ The Pickleball Ladder Team
                     type="radio"
                     id="singles"
                     name="gameType"
-                    onChange={() => handleGameTypeChange("SINGLES")}
+                    onChange={() => handleGameTypeChange(MATCH_TYPE.SINGLES)}
                     checked={gameType === "SINGLES"}
                   />
                   <label htmlFor="singles">Singles</label>
@@ -446,7 +449,7 @@ The Pickleball Ladder Team
                     type="radio"
                     id="doubles"
                     name="gameType"
-                    onChange={() => handleGameTypeChange("DOUBLES")}
+                    onChange={() => handleGameTypeChange(MATCH_TYPE.DOUBLES)}
                     checked={gameType === "DOUBLES"}
                   />
                   <label htmlFor="doubles">Doubles</label>
@@ -457,7 +460,7 @@ The Pickleball Ladder Team
             <div className="action flipInY animated">
               <button
                 onClick={() => {
-                  if (invitationStatus !== "none" && gameType === "DOUBLES") {
+                  if (invitationStatus && gameType === "DOUBLES") {
                     // Skip to invitation status screen if there's an existing invitation
                     setStep(2);
                   } else {
@@ -497,7 +500,7 @@ The Pickleball Ladder Team
                 </button>
               </div>
             </div>
-          ) : invitationStatus !== "none" ? (
+          ) : invitationStatus ? (
             // Show status message if user has an existing invitation
             renderInvitationStatusMessage()
           ) : (
