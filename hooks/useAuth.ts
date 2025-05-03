@@ -5,6 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   sendEmailVerification,
+  sendPasswordResetEmail,
   User,
   onAuthStateChanged,
 } from "firebase/auth";
@@ -176,6 +177,27 @@ export const useAuth = () => {
     }
   };
 
+  const forgotPassword = async (email: string) => {
+    setLoading(true);
+    setError("");
+    try {
+      const bla = await sendPasswordResetEmail(auth, email);
+
+      console.log("logged: bla", bla);
+      setVerificationSent(true);
+      return true;
+    } catch (err: any) {
+      setError(
+        err.code === "auth/user-not-found"
+          ? "No account found with this email."
+          : "Password reset failed. Please try again."
+      );
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     error,
@@ -184,5 +206,6 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    forgotPassword,
   };
 };

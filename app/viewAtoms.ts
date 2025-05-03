@@ -7,4 +7,4 @@ export type ViewType = "ladder" | "join" | "auth" | "matches";
 export const currentViewAtom = atom<ViewType>("ladder");
 
 // define the type of auth mode
-export const authModeAtom = atom<"login" | "register">("login");
+export const authModeAtom = atom<"login" | "register" | "forgot-password">("login");

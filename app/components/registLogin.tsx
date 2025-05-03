@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { sendMail } from "@/lib/mailer";
 import { toast } from "react-hot-toast";
 import { useAtom } from "jotai";
-import {authModeAtom, currentViewAtom} from "@/app/viewAtoms";
+import { authModeAtom, currentViewAtom } from "@/app/viewAtoms";
 
 const Auth = () => {
   const {
@@ -15,7 +15,7 @@ const Auth = () => {
     formState: { errors },
     watch,
     reset,
-    clearErrors
+    clearErrors,
   } = useForm();
 
   const {
@@ -25,22 +25,28 @@ const Auth = () => {
     verificationSent,
     login,
     register: authRegister,
+    forgotPassword,
   } = useAuth();
 
   const [authMode, setAuthMode] = useAtom(authModeAtom);
-  const [isLogin, setIsLogin] = useState<boolean>(authMode === 'login');
+  const [isLogin, setIsLogin] = useState<boolean>(authMode === "login");
+  const [isForgotPassword, setIsForgotPassword] = useState<boolean>(
+    authMode === "forgot-password"
+  );
+  const [resetSent, setResetSent] = useState<boolean>(false);
 
   // const [isLogin, setIsLogin] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState("");
-  
-  const[_, setCurrentView] = useAtom(currentViewAtom);
+  const [successMessage, setSuccessMessage] = useState("");
 
-   // Update isLogin state when authMode changes
-   useEffect(() => {
-    setIsLogin(authMode === 'login');
+  const [_, setCurrentView] = useAtom(currentViewAtom);
+
+  // Update states when authMode changes
+  useEffect(() => {
+    setIsLogin(authMode === "login");
+    setIsForgotPassword(authMode === "forgot-password");
   }, [authMode]);
-  
- 
+
   // Update error message when authError changes
   useEffect(() => {
     if (authError) {
@@ -48,23 +54,44 @@ const Auth = () => {
     }
   }, [authError]);
 
-  // Clear messages when switching between login and register modes
+  // Clear messages when switching between modes
   useEffect(() => {
     setErrorMessage("");
-  }, [isLogin]);
+    setSuccessMessage("");
+    setResetSent(false);
+  }, [isLogin, isForgotPassword]);
 
   useEffect(() => {
     // Reset form and clear errors when user changes
     if (!user) {
       reset(); // Reset form
-      clearErrors(); 
-      setErrorMessage(""); 
+      clearErrors();
+      setErrorMessage("");
+      setSuccessMessage("");
     }
   }, [user, reset, clearErrors]);
 
   const onSubmit = async (data: any) => {
     try {
-      if (isLogin) {
+      if (isForgotPassword) {
+        // Forgot password process
+        const success = await forgotPassword(data.email);
+        if (success) {
+          setSuccessMessage(
+            "Password reset email sent. Please check your inbox."
+          );
+          setResetSent(true);
+          toast.success("Password reset email sent!", {
+            duration: 4000,
+            position: "top-center",
+          });
+        } else {
+          // Error message will be set by useAuth hook
+          setErrorMessage(
+            authError || "Failed to send reset email. Please try again."
+          );
+        }
+      } else if (isLogin) {
         // Login process
         const user = await login(data.email, data.password);
         if (user) {
@@ -73,9 +100,9 @@ const Auth = () => {
             duration: 3000,
             position: "top-center",
           });
-         
+
           setTimeout(() => {
-            setCurrentView('ladder');
+            setCurrentView("ladder");
           }, 1000);
         } else {
           // Error message will be set by the useAuth hook
@@ -120,44 +147,64 @@ const Auth = () => {
     }
   };
 
-  // Handle login/register toggle with authModeAtom
- const handleLoginToggle = () => {
-  setIsLogin(true);
-  setAuthMode('login');
-};
+  // Handle mode toggles with authModeAtom
+  const handleLoginToggle = () => {
+    setAuthMode("login");
+  };
 
-const handleRegisterToggle = () => {
-  setIsLogin(false);
-  setAuthMode('register');
-};
+  const handleRegisterToggle = () => {
+    setAuthMode("register");
+  };
+
+  const handleForgotPasswordToggle = () => {
+    setAuthMode("forgot-password");
+  };
+
+  const handleBackToLogin = () => {
+    setAuthMode("login");
+  };
 
   return (
     <div className="mobile clearfix">
       <div className="header">
         <div className="auth-toggle">
-          <button
-            className={isLogin ? "active" : ""}
-            onClick={handleLoginToggle}
-          >
-            Login
-          </button>
-          <button
-            className={!isLogin ? "active" : ""}
-            onClick={handleRegisterToggle}
-          >
-            Register
-          </button>
+          {!isForgotPassword && (
+            <>
+              <button
+                className={isLogin ? "active" : ""}
+                onClick={handleLoginToggle}
+              >
+                Login
+              </button>
+              <button
+                className={!isLogin && !isForgotPassword ? "active" : ""}
+                onClick={handleRegisterToggle}
+              >
+                Register
+              </button>
+            </>
+          )}
+          {isForgotPassword && (
+            <button onClick={handleBackToLogin}>&larr; Back to Login</button>
+          )}
         </div>
       </div>
       <div className="content">
         <div className="html register visible relative">
           {errorMessage && (
-            <div className="error-message flipInX animated absolute  -top-23 left-0 w-full">{errorMessage}</div>
+            <div className="error-message flipInX animated absolute -top-23 left-0 w-full">
+              {errorMessage}
+            </div>
+          )}
+          {successMessage && (
+            <div className="success-message flipInX animated absolute -top-23 left-0 w-full text-green-500">
+              {successMessage}
+            </div>
           )}
 
           <div className="forms">
             <form onSubmit={handleSubmit(onSubmit)}>
-              {!isLogin && (
+              {!isLogin && !isForgotPassword && (
                 <>
                   <div className="group clearfix slideInRight animated">
                     <label className="pull-left" htmlFor="register-name">
@@ -180,7 +227,6 @@ const handleRegisterToggle = () => {
                         {(errors.name as any)?.message}
                       </div>
                     )}
-                    
                   </div>
 
                   <div className="group clearfix slideInLeft animated">
@@ -208,17 +254,26 @@ const handleRegisterToggle = () => {
                 </>
               )}
 
-              {/* email and password */}
+              {/* Email field */}
               <div
                 className={`group clearfix ${
-                  isLogin ? "fadeInUp" : "slideInRight"
+                  isLogin || isForgotPassword ? "fadeInUp" : "slideInRight"
                 } animated`}
                 style={{ animationDelay: isLogin ? "0.1s" : "0.3s" }}
               >
-              {isLogin &&  <p className="small-info-text mb-[20px]">
-                  Don't have an account yet?
-                  <br /> Please click on register{" "}
-                </p>} 
+                {isLogin && !isForgotPassword && (
+                  <p className="small-info-text mb-[20px]">
+                    Don't have an account yet?
+                    <br /> Please click on register{" "}
+                  </p>
+                )}
+
+                {isForgotPassword && (
+                  <p className="small-info-text mb-[20px]">
+                    Enter your email address to receive a password reset link.
+                  </p>
+                )}
+
                 <label className="pull-left" htmlFor="register-email">
                   <span className="ion-ios-email-outline"></span> Email
                 </label>
@@ -233,7 +288,10 @@ const handleRegisterToggle = () => {
                       message: "Invalid email address",
                     },
                   })}
-                  onFocus={() => setErrorMessage("")}
+                  onFocus={() => {
+                    setErrorMessage("");
+                    setSuccessMessage("");
+                  }}
                 />
                 {errors.email && (
                   <div className="error-text absolute bottom-5 left-0 w-full ">
@@ -242,42 +300,73 @@ const handleRegisterToggle = () => {
                 )}
               </div>
 
-              <div
-                className={`group clearfix ${
-                  isLogin ? "fadeInUp" : "slideInLeft"
-                } animated`}
-                style={{
-                  animationDelay: isLogin ? "0.2s" : "0.4s",
-                  marginBottom: "15px",
-                }}
-              >
-                <label className="pull-left" htmlFor="register-password">
-                  <span className="ion-ios-locked-outline"></span> Password
-                </label>
-                <input
-                  className="pull-right input-underline"
-                  id="register-password"
-                  type="password"
-                  {...register("password", {
-                    required: "Password is required",
-                    minLength: {
-                      value: 6,
-                      message: "Password must be at least 6 characters",
-                    },
-                  })}
-                   onFocus={() => setErrorMessage("")}
-                />
-                {errors.password && (
-                  <div className="error-text absolute bottom-5 left-0 w-full ">
-                    {(errors.password as any)?.message}
-                  </div>
-                )}
-              </div>
+              {/* Password field - only show for login and register */}
+              {!isForgotPassword && (
+                <div
+                  className={`group clearfix ${
+                    isLogin ? "fadeInUp" : "slideInLeft"
+                  } animated`}
+                  style={{
+                    animationDelay: isLogin ? "0.2s" : "0.4s",
+                    marginBottom: "15px",
+                  }}
+                >
+                  <label className="pull-left" htmlFor="register-password">
+                    <span className="ion-ios-locked-outline"></span> Password
+                  </label>
+                  <input
+                    className="pull-right input-underline"
+                    id="register-password"
+                    type="password"
+                    {...register("password", {
+                      required: !isForgotPassword
+                        ? "Password is required"
+                        : false,
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
+                      },
+                    })}
+                    onFocus={() => {
+                      setErrorMessage("");
+                      setSuccessMessage("");
+                    }}
+                  />
+                  {errors.password && (
+                    <div className="error-text absolute bottom-5 left-0 w-full ">
+                      {(errors.password as any)?.message}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="action flipInY animated">
-                <button type="submit" className="btn" disabled={loading}>
-                  {loading ? "Loading..." : isLogin ? "Login" : "Register"}
+                <button
+                  type="submit"
+                  className="btn"
+                  disabled={loading || (isForgotPassword && resetSent)}
+                >
+                  {loading
+                    ? "Loading..."
+                    : isForgotPassword
+                    ? "Reset Password"
+                    : isLogin
+                    ? "Login"
+                    : "Register"}
                 </button>
+
+                {/* Forgot Password link - only show on login screen */}
+                {isLogin && !isForgotPassword && (
+                  <div className="mt-3 text-center mt-2 mb-4">
+                    <button
+                      type="button"
+                      className="text-sm hover:underline"
+                      onClick={handleForgotPasswordToggle}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
               </div>
             </form>
           </div>
@@ -288,4 +377,3 @@ const handleRegisterToggle = () => {
 };
 
 export default Auth;
-
