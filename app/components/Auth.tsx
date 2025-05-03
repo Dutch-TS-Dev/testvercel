@@ -126,14 +126,14 @@ const Auth = () => {
             }
           );
 
-          // After successful registration, send an admin notification email
-          await sendMail({
-            from: "teamworkforever2025@gmail.com",
-            to: "jian.lu.ou@gmail.com",
-            subject: "New User Registration",
-            text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}\n\nUser needs to verify their email address.`,
-            attachments: [],
-          });
+          // // After successful registration, send an admin notification email
+          // await sendMail({
+          //   from: "teamworkforever2025@gmail.com",
+          //   to: "jian.lu.ou@gmail.com",
+          //   subject: "New User Registration",
+          //   text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}\n\nUser needs to verify their email address.`,
+          //   attachments: [],
+          // });
 
           reset();
         } else {
@@ -228,29 +228,6 @@ const Auth = () => {
                       </div>
                     )}
                   </div>
-
-                  <div className="group clearfix slideInLeft animated">
-                    <label className="pull-left" htmlFor="register-age">
-                      <span className="ion-ios-person-outline"></span> Age
-                    </label>
-                    <input
-                      className="pull-right input-underline"
-                      id="register-age"
-                      type="number"
-                      {...register("age", {
-                        required: "Age is required",
-                        min: {
-                          value: 1,
-                          message: "Age must be at least 1",
-                        },
-                      })}
-                    />
-                    {errors.age && (
-                      <div className="error-text absolute bottom-5 left-0 w-full ">
-                        {(errors.age as any)?.message}
-                      </div>
-                    )}
-                  </div>
                 </>
               )}
 
@@ -339,6 +316,48 @@ const Auth = () => {
                   )}
                 </div>
               )}
+              {/* {!isLogin && !isForgotPassword && (
+                <>
+                  <div className="group clearfix slideInRight animated">
+                    <label className="pull-left" htmlFor="mobile-phone">
+                      <span className="ion-ios-telephone-outline"></span> Mobile
+                      phone
+                    </label>
+                    <input
+                      className="pull-right input-underline"
+                      id="mobile-phone"
+                      type="tel"
+                      {...register("phoneNumber")}
+                    />
+                  </div>
+
+                  <div className="group clearfix slideInLeft animated">
+                    <label className="pull-left" htmlFor="allow-email">
+                      <span className="ion-ios-email-outline"></span> Email
+                      contact
+                    </label>
+                    <input
+                      className="pull-right input-underline"
+                      id="allow-email"
+                      type="text"
+                      {...register("emailContact")}
+                    />
+                  </div>
+
+                  <div className="group clearfix slideInRight animated">
+                    <label className="pull-left" htmlFor="line-id">
+                      <span className="ion-chatbubble-working"></span> LINE ID
+                    </label>
+                    <input
+                      className="pull-right input-underline"
+                      id="line-id"
+                      type="text"
+                      placeholder="LINE ID"
+                      {...register("lineId")}
+                    />
+                  </div>
+                </>
+              )} */}
 
               <div className="action flipInY animated">
                 <button
