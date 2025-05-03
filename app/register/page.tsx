@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useAtom } from "jotai";
 import { userAtom } from "../useAtoms";
-import { players } from "../data/players";
+import { players } from "../data/dummy";
 import Link from "next/link";
 
 // User class definition

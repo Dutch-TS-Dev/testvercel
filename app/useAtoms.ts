@@ -18,5 +18,5 @@ const DEFAULT_USER: Types.Player = {
 // Export a single user atom that will be used throughout the app
 export const userAtom = atom<Types.Player>(DEFAULT_USER);
 
-export const gameTypeAtom = atom<Types.MATCH_TYPE>();
+export const gameTypeAtom = atom<Types.MATCH_TYPE | undefined>();
 export const invitationStatusAtom = atom<Types.INVITATION_STATUS | undefined>();

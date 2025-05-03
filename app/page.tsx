@@ -4,13 +4,14 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { userAtom } from "./useAtoms";
-import LadderRow from "./components/ladderRow";
-import Join from "./components/join";
-import { players } from "./data/players";
+import LadderRow from "./components/LadderRow";
+import Join from "./components/Join";
+import { players } from "./data/dummy";
 import Auth from "./components/registLogin";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { currentViewAtom, ViewType } from "@/app/viewAtoms";
+import RoundsViewer from "./components/Viewer";
 
 // Define types
 interface DatetimeState {
@@ -19,88 +20,12 @@ interface DatetimeState {
   time: string;
 }
 
-interface AppState {
-  activeHtml: string;
-  pageTitle: string;
-  sidebarActive: boolean;
-  navActive: boolean;
-  searchVisible: boolean;
-  searchQuery: string;
-  datetime: DatetimeState;
-}
-
-// Jotai atoms
-const datetimeAtom = atom<DatetimeState>({
-  day: "",
-  date: "",
-  time: "",
-});
-
 const activeHtmlAtom = atom<string>("ladder");
 const pageTitleAtom = atom<string>("Ladder");
 const sidebarActiveAtom = atom<boolean>(false);
 const navActiveAtom = atom<boolean>(false);
 const searchVisibleAtom = atom<boolean>(false);
 const searchQueryAtom = atom<string>("");
-
-// Function to update date and time
-const updateDatetime = () => {
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const dayIndex = now.getDay();
-  const monthIndex = now.getMonth();
-  let date = now.getDate();
-  date = date < 10 ? Number(`0${date}`) : date;
-
-  let hours = now.getHours();
-  let minutes = now.getMinutes();
-  let seconds = now.getSeconds();
-
-  let period = "AM";
-  if (hours >= 12) {
-    period = "PM";
-  }
-
-  if (hours > 12) {
-    hours -= 12;
-  } else if (hours === 0) {
-    hours = 12;
-  }
-
-  const minutesStr = minutes < 10 ? `0${minutes}` : minutes;
-  const secondsStr = seconds < 10 ? `0${seconds}` : seconds;
-
-  return {
-    day: days[dayIndex],
-    date: `${months[monthIndex]} ${date}, ${year}`,
-    time: `${hours}:${minutesStr}:${secondsStr} ${period}`,
-  };
-};
 
 const Home = () => {
   // Jotai state hooks
@@ -124,6 +49,7 @@ const Home = () => {
       auth: "Register",
       ladder: "Ladder",
       profile: "Profile",
+      matches: "Matches",
     }[currentView];
 
     if (newTitle) setPageTitle(newTitle);
@@ -135,8 +61,6 @@ const Home = () => {
       setActiveHtml(currentView);
     }
   }, [activeHtml, currentView, setActiveHtml]);
-
-  const sortedPlayers = [...players].sort((a, b) => a.rank - b.rank);
 
   // Event handlers
   const toggleSidebar = () => {
@@ -227,7 +151,7 @@ const Home = () => {
       {/* <div className={`mobile-wrap relative ${getRandomPosition()}`}> */}
       {/* <div className={`mobile-wrap relative right-[${getRandomPosition()}px] `}> */}
       {/* <div className="mobile-wrap"> */}
-      <div className="mobile clearfix">
+      <div className="mobile clearfix overflow-scroll">
         <div className="header">
           <span
             className="cursor-pointer ion-ios-navicon pull-left"
@@ -303,6 +227,15 @@ const Home = () => {
                 <span className="ion-ios-people-outline"></span> Join
               </a>
               <a
+                href="#matches"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSideNavClick("matches", "Matches");
+                }}
+              >
+                <span className="ion-ios-people-outline"></span> Matches
+              </a>
+              {/* <a
                 href="#compose"
                 onClick={(e) => {
                   e.preventDefault();
@@ -310,7 +243,7 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-compose-outline"></span> Compose
-              </a>
+              </a> */}
               <a
                 href="#profile"
                 onClick={(e) => {
@@ -329,7 +262,7 @@ const Home = () => {
               >
                 <span className="ion-ios-gear-outline"></span> Settings
               </a>
-              <a
+              {/* <a
                 href="#credits"
                 onClick={(e) => {
                   e.preventDefault();
@@ -337,7 +270,7 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-information-outline"></span> Credits
-              </a>
+              </a> */}
               {/* <a
                 href="#login"
                 onClick={(e) => {
@@ -464,6 +397,13 @@ const Home = () => {
           >
             <Join />
           </div>
+          <div
+            className={`html matches ${
+              activeHtml === "matches" ? "visible" : ""
+            }`}
+          >
+            <RoundsViewer />
+          </div>
 
           <div
             className={`html register ${
@@ -520,7 +460,7 @@ const Home = () => {
           >
             <div className="tabs-list clearfix">
               <a href="#" className="tab active">
-                Players
+                Teams
               </a>
               {/* <a href="#" className="tab">
                 Messages
@@ -531,14 +471,9 @@ const Home = () => {
             </div>
 
             <div className="players">
-              {sortedPlayers.map((player) => (
-                <LadderRow
-                  key={player.id}
-                  playerName={player.name}
-                  playerTeamId={player.teamId}
-                  playerRank={player.rank}
-                />
-              ))}
+              {/* {players.map((player, i) => (
+                <LadderRow key={i} {...player} />
+              ))} */}
             </div>
           </div>
           <div
@@ -732,7 +667,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <div className={`nav ${navActive ? "active" : ""}`}>
+        {/* <div className={`nav ${navActive ? "active" : ""}`}>
           <a
             href="#profile"
             className="nav-item nav-count-1"
@@ -766,17 +701,7 @@ const Home = () => {
             <i className="ion-ios-list-outline"></i>
             <span className="invisible">Ladder</span>
           </a>
-          {/* <a
-            href="#alarm"
-            className="nav-item nav-count-4"
-            onClick={(e) => {
-              e.preventDefault();
-              handleNavItemClick("alarm", "Alarm");
-            }}
-          >
-            <i className="ion-ios-alarm-outline"></i>
-            <span className="invisible">Alarm</span>
-          </a> */}
+        
           <a
             href="#join"
             className="nav-item nav-count-4"
@@ -790,8 +715,8 @@ const Home = () => {
           </a>
           <a href="#toggle" className="mask" onClick={toggleNav}>
             <i className="ion-ios-plus-empty"></i>
-          </a>
-        </div>
+           </a>
+        </div> */}
       </div>
     </div>
   );

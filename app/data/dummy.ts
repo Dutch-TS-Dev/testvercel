@@ -1,4 +1,8 @@
-export const players = [
+// teams.ts
+import { Team } from "@/types";
+import { Player } from "@/types";
+
+export const players: Array<Player> = [
   {
     id: "3a7e1edb-65bf-4e3c-a8e4-8635d2c851a4",
     name: "Thomas Müller",
@@ -238,5 +242,143 @@ export const players = [
     email: "lara.herrmann@example.com",
     teamId: "8c4b2e7a-3d9f-45e8-b2a8-5c9d3e1f8a4b",
     rank: 30,
+  },
+];
+
+export const teams: Array<Team> = [
+  {
+    id: "8a5d0e1c-154f-47e2-93e1-a4b25c61415b",
+    name: "Eagles",
+    rank: 1,
+    playerIds: [
+      "3a7e1edb-65bf-4e3c-a8e4-8635d2c851a4", // Thomas Müller
+      "f2a28290-1e9c-48a5-b1e7-2c2a8fa86eccr", // Julia Weber
+    ],
+  },
+  {
+    id: "3c6f2e1d-9b4a-4e8c-ba27-34d6e71a5c82",
+    name: "Tigers",
+    rank: 2,
+    playerIds: [
+      "6ac3e4b7-bf9c-4d94-9dc8-5517bc2e87a7", // Michael Schmidt
+      "1d8f3a6e-2c7b-45d9-b1a8-9e5c4f8d2e3b", // Laura Fischer
+    ],
+  },
+  {
+    id: "5e9d2c7b-1a8f-43e6-b7c1-9d8e2a5f4b3c",
+    name: "Hawks",
+    rank: 3,
+    playerIds: [
+      "9b5c7a3e-1d8f-42e6-b3a7-5c2d1e9f8a4b", // Stefan Wagner
+      "4b2e8c7a-3d9f-41e5-a6b2-8c7d3e5f9a1b", // Sophia Becker
+    ],
+  },
+  {
+    id: "7b2d9c4a-3e8f-41d6-a2b7-5c9d3e1f8a4b",
+    name: "Lions",
+    rank: 4,
+    playerIds: [
+      "7d9e5a3b-2c4f-48d7-b1a9-3e8c6f4d2b5a", // Markus Hoffmann
+      "2e1d9c7b-4a3f-45e8-b2a7-1d8c5f3e9a4b", // Anna Schulz
+    ],
+  },
+  {
+    id: "1d9c4b2e-7a3f-45e8-b2a7-5c9d3e1f8a4b",
+    name: "Panthers",
+    rank: 5,
+    playerIds: [
+      "5a3b9e7d-2c8f-44d6-b1a5-9e3c7f2d4b8a", // David Koch
+      "8c4b2e7a-3d9f-41e5-a6b2-8c7d3e5f9a1b", // Lisa Meyer
+    ],
+  },
+  {
+    id: "9c4b2e7a-3d1f-45e8-b2a7-5c9d3e1f8a4b",
+    name: "Sharks",
+    rank: 6,
+    playerIds: [
+      "3e8c5a7d-9b2f-46d4-b1a8-3e7c5f9d2b4a", // Jonas Richter
+      "6f4d2b5a-7c3e-48d9-b1a6-3e8c5f9d2b7a", // Lena Wolf
+    ],
+  },
+  {
+    id: "2e7d9c4a-3b8f-41d6-a2e7-5c9d3e1f8a4b",
+    name: "Ravens",
+    rank: 7,
+    playerIds: [
+      "9c7b5a3e-2d8f-46d4-b1a9-5e3c7f2d4b8a", // Felix Schäfer
+      "2c8f4d6b-9a3e-47d5-b1a2-8e5c3f9d7b4a", // Emilia Bauer
+    ],
+  },
+  {
+    id: "4b7e1d9c-5a3f-42e8-b7a2-1c9d3e5f8a4b",
+    name: "Wolves",
+    rank: 8,
+    playerIds: [
+      "5d9e7b3a-4c2f-48d6-b1a5-9e3c7f2d4b8a", // Niklas Klein
+      "8f4d2b5a-7c3e-49d8-b1a6-3e8c5f9d2b7a", // Hannah Schneider
+    ],
+  },
+  {
+    id: "6a9c4b2e-7d3f-45e8-b2a7-5c9d3e1f8a4b",
+    name: "Bears",
+    rank: 9,
+    playerIds: [
+      "1c8f4d6b-9a3e-47d5-b1a2-8e5c3f9d7b4a", // Leon Zimmermann
+      "4d9e7b3a-2c8f-45d6-b1a4-9e3c7f2d4b8a", // Sophie Krause
+    ],
+  },
+  {
+    id: "8c4b2e7a-9d3f-45e8-b2a7-5c9d3e1f8a4b",
+    name: "Falcons",
+    rank: 10,
+    playerIds: [
+      "7f4d2b5a-1c3e-48d9-b1a7-3e8c5f9d2b7a", // Tim Schwarz
+      "0c8f4d6b-9a3e-47d5-b1a0-8e5c3f9d7b4a", // Marie Neumann
+    ],
+  },
+  {
+    id: "0c4b2e7a-3d9f-45e8-b2a0-5c9d3e1f8a4b",
+    name: "Cobras",
+    rank: 11,
+    playerIds: [
+      "3d9e7b3a-2c8f-45d6-b1a3-9e3c7f2d4b8a", // Lukas Werner
+      "6f4d2b5a-1c3e-48d9-b1a6-3e8c5f9d2b7a", // Emma Schmitt
+    ],
+  },
+  {
+    id: "2c4b2e7a-3d9f-45e8-b2a2-5c9d3e1f8a4b",
+    name: "Jaguars",
+    rank: 12,
+    playerIds: [
+      "9c8f4d6b-9a3e-47d5-b1a9-8e5c3f9d7b4a", // Paul Krüger
+      "2d9e7b3a-2c8f-45d6-b1a2-9e3c7f2d4b8a", // Mia Hofmann
+    ],
+  },
+  {
+    id: "4c4b2e7a-3d9f-45e8-b2a4-5c9d3e1f8a4b",
+    name: "Owls",
+    rank: 13,
+    playerIds: [
+      "5f4d2b5a-1c3e-48d9-b1a5-3e8c5f9d2b7a", // Jan Braun
+      "8c8f4d6b-9a3e-47d5-b1a8-8e5c3f9d7b4a", // Lea König
+    ],
+  },
+  {
+    id: "6c4b2e7a-3d9f-45e8-b2a6-5c9d3e1f8a4b",
+    name: "Dolphins",
+    rank: 14,
+    playerIds: [
+      "1d9e7b3a-2c8f-45d6-b1a1-9e3c7f2d4b8a", // Finn Huber
+      "4f4d2b5a-1c3e-48d9-b1a4-3e8c5f9d2b7a", // Sarah Peters
+    ],
+  },
+  {
+    id: "8c4b2e7a-3d9f-45e8-b2a8-5c9d3e1f8a4b",
+    name: "Foxes",
+    rank: 15,
+    playerIds: [
+      "7c8f4d6b-9a3e-47d5-b1a7-8e5c3f9d7b4a", // Max Berger
+      "0d9e7b3a-2c8f-45d6-b1a0-9e3c7f2d4b8a", // Lara Herrmann
+    ],
   },
 ];

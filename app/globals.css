@@ -21,6 +21,15 @@ html {
   --gradient-red-subtle-6: linear-gradient(60deg, #f25833, #f2774d, #f27033);
 }
 
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -107,7 +116,7 @@ body {
 
 .mobile .header {
   clear: both;
-  overflow: hidden;
+
   padding-top: 15px;
   position: relative;
 }

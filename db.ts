@@ -14,8 +14,27 @@ import {
 } from "firebase/firestore"; // Import Firestore
 dotenv.config({ path: "./.env.local" });
 
-import { v4 as uuidv4 } from "uuid";
-export const uuid = uuidv4;
+import { randomUUID } from "crypto";
+
+export async function getDocumentsByField<Type>(
+  collectionName: string,
+  field: keyof Type,
+  value1: any,
+  value2: any
+): Promise<Type[]> {
+  try {
+    const q = query(
+      collection(db, collectionName),
+      where(field as string, "in", [value1, value2])
+    );
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => doc.data() as Type);
+  } catch (error) {
+    console.error("Error getting documents:", error);
+    return [];
+  }
+}
+export const uuid = randomUUID;
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

@@ -1,30 +1,25 @@
-import { useRef, useEffect } from "react";
-import { teams } from "../data/teams";
-
-// Props für die Ladder-Komponente
-interface LadderProps {
-  playerName: string;
-  playerTeamId: string;
-  playerRank: number;
-}
-
-// Ladder-Komponente
-const LadderRow: React.FC<LadderProps> = ({
-  playerName,
-  playerTeamId,
-  playerRank,
+// Simplified LadderRow without the component structure
+// and without unnecessary refs
+const LadderRow = ({
+  name,
+  teamId,
+  rank,
+}: {
+  name: string;
+  teamId: string;
+  rank: number;
 }) => {
-  const photoRef = useRef<HTMLDivElement | null>(null);
-  const colorRef = useRef<string[] | null>(null);
+  // Alternate animation direction based on rank
+  const animationDirection = Number(!!rank) % 2 === 0 ? "Right" : "Left";
 
-  const team = teams.find((t) => t.id === playerTeamId);
-  const teamName = team ? team.name : "UnKnown Team";
+  // Dynamically determine pull direction based on rank
+  const photoDirection = Number(!!rank) % 2 === 0 ? "right" : "left";
+  const descDirection = Number(!!rank) % 2 === 0 ? "right" : "left";
+  const idleDirection = Number(!!rank) % 2 === 0 ? "left" : "right";
 
-  const animationDirection = playerRank % 2 === 0 ? "Right" : "Left";
-
-  // Logik für das Trophy-Icon
+  // Logic for the Trophy-Icon
   const getTrophyIcon = () => {
-    switch (playerRank) {
+    switch (rank) {
       case 1:
         return (
           <span className="trophy">
@@ -53,27 +48,24 @@ const LadderRow: React.FC<LadderProps> = ({
       className={`player clearfix rotateInDown${animationDirection} animated`}
     >
       <div
-        className="photo pull-left"
-        ref={photoRef}
+        className={`photo pull-${photoDirection}`}
         style={{
           border: "1px solid rgba(242, 51, 99,0.7)",
           borderRadius: "50%",
-
           color: "rgb(255,255,255)",
         }}
       >
-        {teamName === "UnKnown Team" ? "?" : teamName.slice(0, 1)}
+        {name === "UnKnown Team" ? "?" : name.slice(0, 1)}
       </div>
-      <div className="desc pull-left">
-        <p className="name">{playerName}</p>
-        <p className="position">{teamName}</p>
+      <div className={`desc pull-${descDirection}`}>
+        <p className="name">{name}</p>
+        <p className="position">{name}</p>
       </div>
-      <div className="idle pull-right">
+      <div className={`idle pull-${idleDirection}`}>
         {getTrophyIcon()}
-        <span className="rank">{playerRank}</span>
+        <span className="rank">{rank}</span>
       </div>
     </div>
   );
 };
-
 export default LadderRow;

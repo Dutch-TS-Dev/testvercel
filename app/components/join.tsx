@@ -3,51 +3,52 @@
 import React, { useState, useEffect } from "react";
 import { useAtom, atom, useSetAtom } from "jotai";
 import { gameTypeAtom, invitationStatusAtom, userAtom } from "../useAtoms";
-import { Player, INVITATION_STATUS, COLLECTIONS, MATCH_TYPE } from "@/types";
+import {
+  Player,
+  INVITATION_STATUS,
+  COLLECTIONS,
+  MATCH_TYPE,
+  Invitation,
+} from "@/types";
 import { useRouter } from "next/navigation";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { authModeAtom, currentViewAtom } from "@/app/viewAtoms";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  serverTimestamp,
-} from "firebase/firestore";
-import { db, getDocument, getDocuments, setDocument, uuid } from "@/db";
-import { toast } from "react-hot-toast"; // Make sure to install this package
+import { serverTimestamp } from "firebase/firestore";
+import { getDocument, getDocuments, setDocument, uuid } from "@/db";
+import { toast } from "react-hot-toast";
 
 // Import the sendMail function
 import { sendMail } from "@/lib/mailer";
 
-// Form input types
-export interface JoinFormInputs {
-  teamName: string;
-  partnerEmail: string;
-}
-
-export interface InvitationData {
-  teamName: string;
-  matchType: MATCH_TYPE;
-  inviterId: string;
-  inviterName: string;
-  inviterEmail: string;
-  partnerId: string;
-  partnerEmail: string;
-  partnerName: string;
-  status: INVITATION_STATUS;
-  createdAt: any; // Use appropriate type for Firestore timestamp
-  expiresAt: Date;
-}
-
 // Jotai atoms for form state
-
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
 
 interface JoinPageProps {}
 
+// Form input types
+interface JoinFormInputs {
+  teamName: string;
+  partnerEmail: string;
+}
+
+// Utility function to get player information
+const getPlayerInfo = async (playerId: string): Promise<Player | undefined> => {
+  try {
+    return await getDocument<Player>(COLLECTIONS.PLAYERS, { id: playerId });
+  } catch (error) {
+    console.error("Error getting player information:", error);
+    return undefined;
+  }
+};
+
+enum PARTICIPATION_STEPS {
+  INFO = 1,
+  FORM = 2,
+  CONFIRMATION = 3,
+}
+
 // Join Page Component
-const JoinPage: React.FC<JoinPageProps> = () => {
+const Join: React.FC<JoinPageProps> = () => {
   const [user] = useAtom(userAtom);
   const [gameType, setGameType] = useAtom(gameTypeAtom);
   const [step, setStep] = useAtom(stepAtom);
@@ -79,69 +80,82 @@ const JoinPage: React.FC<JoinPageProps> = () => {
     }
   }, [user]);
 
-  // Function to check if the user has any pending invitations
   const checkExistingInvitations = async () => {
     setIsLoading(true);
 
     try {
       // Check invitations where the user is the inviter
-      const invitationsRef = collection(db, COLLECTIONS.INVITATIONS);
-      const inviterQuery = query(
-        invitationsRef,
-        where("inviterId", "==", user.id),
-        where("status", "in", Object.values(INVITATION_STATUS))
+      const inviterInvitations = await getDocuments<Invitation>(
+        COLLECTIONS.INVITATIONS,
+        {
+          inviterId: user.id,
+        }
       );
 
-      const inviterSnapshot = await getDocs(inviterQuery);
+      // Filter for relevant status values
+      const relevantInviterInvitations = inviterInvitations.filter((inv) =>
+        Object.values(INVITATION_STATUS).includes(inv.status)
+      );
 
-      if (!inviterSnapshot.empty) {
-        // Get the most recent invitation
-        const invitations = await getDocuments<InvitationData>(
+      if (relevantInviterInvitations.length > 0) {
+        // Get invitations where user is the partner
+        const partnerInvitations = await getDocuments<Invitation>(
           COLLECTIONS.INVITATIONS,
           {
             partnerId: user.id,
           }
         );
 
-        if (invitations.length > 0) {
-          // throw new Error()
-          // support case of multiple invitations
-        }
+        if (partnerInvitations.length > 0) {
+          // Handle case of most recent invitation
+          const [invitation] = partnerInvitations.sort((a, b) => {
+            const dateA = a.createdAt?.toDate
+              ? a.createdAt.toDate()
+              : new Date(0);
+            const dateB = b.createdAt?.toDate
+              ? b.createdAt.toDate()
+              : new Date(0);
+            return dateB.getTime() - dateA.getTime(); // Sort descending (newest first)
+          });
 
-        const [invitation] = invitations;
+          if (invitation) {
+            // Fetch partner information since it's not stored in invitation
+            const partner = await getPlayerInfo(invitation.partnerId);
 
-        let latestTimestamp = new Date();
+            if (partner) {
+              setPartnerName(partner.name || "Partner");
+            } else {
+              // Fallback if partner info can't be retrieved
+              setPartnerName("Partner");
+            }
 
-        // inviterSnapshot.forEach((doc) => {
-        //   const data = doc.data() as InvitationData;
-        //   const createdAt = data.createdAt?.toDate() || new Date(0);
-        //   if (createdAt > latestTimestamp) {
-        //     latestInvitation = data;
-        //     latestTimestamp = createdAt;
-        //   }
-        // });
-
-        if (invitation) {
-          setPartnerName(invitation.partnerName || invitation.partnerEmail);
-          setInvitationStatus(invitation.status as INVITATION_STATUS);
-          setGameType(MATCH_TYPE.DOUBLES); // Since we found an invitation, set game type to DOUBLES
+            setInvitationStatus(invitation.status as INVITATION_STATUS);
+            setGameType(MATCH_TYPE.DOUBLES);
+          }
         }
       } else {
         // Check if user is a partner in any accepted invitation
-        const partnerQuery = query(
-          invitationsRef,
-          where("partnerId", "==", user.id),
-          where("status", "==", "accepted")
+        const acceptedPartnerInvitations = await getDocuments<Invitation>(
+          COLLECTIONS.INVITATIONS,
+          {
+            partnerId: user.id,
+            status: INVITATION_STATUS.ACCEPTED,
+          }
         );
 
-        const partnerSnapshot = await getDocs(partnerQuery);
+        if (acceptedPartnerInvitations.length > 0) {
+          const [partnerInvitation] = acceptedPartnerInvitations;
 
-        if (!partnerSnapshot.empty) {
-          const partnerInvitation =
-            partnerSnapshot.docs[0].data() as InvitationData;
-          setPartnerName(
-            partnerInvitation.inviterName || partnerInvitation.inviterEmail
-          );
+          // Need to fetch inviter information
+          const inviter = await getPlayerInfo(partnerInvitation.inviterId);
+
+          if (inviter) {
+            setPartnerName(inviter.name || "Partner");
+          } else {
+            // Fallback if inviter info can't be retrieved
+            setPartnerName("Partner");
+          }
+
           setInvitationStatus(INVITATION_STATUS.ACCEPTED);
           setGameType(MATCH_TYPE.DOUBLES);
         } else {
@@ -160,7 +174,7 @@ const JoinPage: React.FC<JoinPageProps> = () => {
     // Prevent multiple submissions
     if (isSubmitting) return;
     setIsSubmitting(true);
-    debugger;
+
     // Check if partner email is the same as current user's email
     if (user?.email === data.partnerEmail) {
       toast.error("You cannot be your own partner!");
@@ -172,9 +186,8 @@ const JoinPage: React.FC<JoinPageProps> = () => {
       // Query Firebase Auth to find the partner by email
       const { getAuth } = await import("firebase/auth");
       const auth = getAuth();
-      const fetchSignInMethodsForEmail = (await import("firebase/auth"))
-        .fetchSignInMethodsForEmail;
-      debugger;
+      const { fetchSignInMethodsForEmail } = await import("firebase/auth");
+
       // Check if the email exists in Firebase Auth
       const methods = await fetchSignInMethodsForEmail(auth, data.partnerEmail);
 
@@ -199,29 +212,25 @@ const JoinPage: React.FC<JoinPageProps> = () => {
 
       const toastId = toast.loading("Sending invitation...");
 
-      const invite = {
+      const invite: Invitation = {
         id: uuid(),
         teamName: data.teamName,
-        gameType: gameType,
+        matchType: gameType,
         inviterId: user.id,
-        inviterName: user.name,
-        inviterEmail: user.email,
         partnerId: partnerPlayer.id,
-        partnerEmail: data.partnerEmail,
-        partnerName: partnerPlayer.name,
-        status: "pending",
+        status: INVITATION_STATUS.PENDING,
         createdAt: serverTimestamp(),
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expires in 7 days
+        confirmationToken: uuid(),
+        rejectionToken: uuid(), // acbd11111
       };
-      await setDocument(COLLECTIONS.PLAYERS, invite);
 
-      const invitationId = invite.id;
+      // Save the invitation
+      await setDocument(COLLECTIONS.INVITATIONS, invite);
 
-      // Generate confirmation/rejection links
-      const baseUrl = window.location.origin;
-      const confirmUrl = `${baseUrl}/teamInvitation?id=${invitationId}&action=confirm`;
-      const rejectUrl = `${baseUrl}/teamInvitation?id=${invitationId}&action=reject`;
-      debugger;
+      const confirmUrl = `http://localhost:3000/api/invite?confirm=${invite.confirmationToken}`;
+      const rejectUrl = `http://localhost:3000/api/invite?reject=${invite.rejectionToken}`;
+
       // Send email to partner
       sendMail({
         from:
@@ -231,7 +240,7 @@ const JoinPage: React.FC<JoinPageProps> = () => {
           user.name || user.email
         } wants you to join their pickleball team!`,
         text: `
-Hello ${partnerPlayer.name || partnerPlayer.email},
+Hello ${partnerPlayer.name || data.partnerEmail},
 
 ${user.name || user.email} has invited you to join their pickleball team "${
           data.teamName
@@ -254,7 +263,7 @@ The Pickleball Ladder Team
 
       // Update invitation status and move to confirmation step
       setInvitationStatus(INVITATION_STATUS.PENDING);
-      setPartnerName(partnerPlayer.name || partnerPlayer.email);
+      setPartnerName(partnerPlayer.name || data.partnerEmail);
       setStep(3);
     } catch (error) {
       console.error("Error creating team invitation:", error);
@@ -283,13 +292,11 @@ The Pickleball Ladder Team
   // Navigate to home without the flash
   const navigateToHome = () => {
     // Reset form state first
-    // setStep(1);
     setGameType(undefined);
     reset();
 
-    // Use Next.js router for smooth navigation
-    // router.push("/");
-    window.location.href = "/";
+    // Use Next.js router for smooth navigation instead of window.location
+    router.push("/");
   };
 
   // Render invitation status message
@@ -297,7 +304,7 @@ The Pickleball Ladder Team
     switch (invitationStatus) {
       case INVITATION_STATUS.PENDING:
         return (
-          <div className="invitation-status pending flipInX animated mt-[30px]  small-info-text">
+          <div className="invitation-status pending flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
               Your partner has not confirmed the invitation yet. Please wait.
             </p>
@@ -374,7 +381,6 @@ The Pickleball Ladder Team
                 onClick={() => {
                   setAuthMode("login");
                   setCurrentView("auth");
-                  // toast.info("Please log in to continue");
                 }}
               >
                 Go to Login
@@ -394,7 +400,6 @@ The Pickleball Ladder Team
           <div className="title bounceInDown animated">Loading</div>
           <div className="loading-content flipInX animated text-center">
             <p>Checking your invitation status...</p>
-            {/* You can add a spinner here if desired */}
           </div>
         </div>
       </div>
@@ -407,6 +412,8 @@ The Pickleball Ladder Team
       {step === 1 && (
         <div className="html visible">
           <div className="title bounceInDown animated">Ladder Information</div>
+          {/* @jian: wenn einladung nach partner geschickt: dan text: "wir warten auf genehmigung deines partner
+          fuer team ${teamname}" */}
           <div className="info-content flipInX animated">
             <p>
               Welcome to the Pickleball Ladder Competition! Here are some key
@@ -439,7 +446,7 @@ The Pickleball Ladder Team
                     id="singles"
                     name="gameType"
                     onChange={() => handleGameTypeChange(MATCH_TYPE.SINGLES)}
-                    checked={gameType === "SINGLES"}
+                    checked={gameType === MATCH_TYPE.SINGLES}
                   />
                   <label htmlFor="singles">Singles</label>
                 </div>
@@ -449,7 +456,7 @@ The Pickleball Ladder Team
                     id="doubles"
                     name="gameType"
                     onChange={() => handleGameTypeChange(MATCH_TYPE.DOUBLES)}
-                    checked={gameType === "DOUBLES"}
+                    checked={gameType === MATCH_TYPE.DOUBLES}
                   />
                   <label htmlFor="doubles">Doubles</label>
                 </div>
@@ -458,14 +465,7 @@ The Pickleball Ladder Team
 
             <div className="action flipInY animated">
               <button
-                onClick={() => {
-                  if (invitationStatus && gameType === "DOUBLES") {
-                    // Skip to invitation status screen if there's an existing invitation
-                    setStep(2);
-                  } else {
-                    setStep(2);
-                  }
-                }}
+                onClick={() => setStep(2)}
                 disabled={!gameType}
                 className={`btn ${!gameType ? "btn-disabled" : ""}`}
               >
@@ -480,12 +480,12 @@ The Pickleball Ladder Team
       {step === 2 && (
         <div className="html visible">
           <div className="title bounceInDown animated">
-            {gameType === "SINGLES"
+            {gameType === MATCH_TYPE.SINGLES
               ? "Singles Registration"
               : "Doubles Registration"}
           </div>
 
-          {gameType === "SINGLES" ? (
+          {gameType === MATCH_TYPE.SINGLES ? (
             <div className="singles-unavailable flipInX animated">
               <p className="text-center">
                 Singles play is currently not available.
@@ -602,13 +602,7 @@ The Pickleball Ladder Team
             </p>
             <p>The invitation will expire in 7 days if no action is taken.</p>
             <div className="action flipInY animated">
-              <button
-                className="btn"
-                onClick={() => {
-                  navigateToHome();
-                  // toast.success("Successfully returned to home");
-                }}
-              >
+              <button className="btn" onClick={navigateToHome}>
                 Return to Home
               </button>
             </div>
@@ -619,4 +613,4 @@ The Pickleball Ladder Team
   );
 };
 
-export default JoinPage;
+export default Join;

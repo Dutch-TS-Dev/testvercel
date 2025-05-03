@@ -1,9 +1,11 @@
 export enum COLLECTIONS {
   PLAYERS = "PLAYERS",
   INVITATIONS = "INVITATIONS",
+  TEAMS = "TEAMS",
 }
 
 export type Player = {
+  teamId?: string;
   id: string;
   name: string;
   age: number;
@@ -11,6 +13,7 @@ export type Player = {
   email: string;
   emailVerified?: boolean;
   createdAt?: string;
+  hasDUPR?: boolean;
 };
 
 export type Team = {
@@ -23,6 +26,7 @@ export type Team = {
 export enum MATCH_TYPE {
   DOUBLES = "DOUBLES",
   SINGLES = "SINGLES",
+  BYE = "BYE",
 }
 
 export type Match = {
@@ -34,6 +38,7 @@ export type Match = {
   reporter: 1 | 2;
   score: string; // 11-2-11-3-
   date: Date;
+  isBye?: boolean; // true if the match is a bye
 };
 
 export type Ladder = {
@@ -44,6 +49,7 @@ export type Ladder = {
 };
 
 export type Round = {
+  id?: string;
   startDate: number;
   endDate: number;
   matchType: MATCH_TYPE;
@@ -58,9 +64,17 @@ export enum INVITATION_STATUS {
 }
 
 export type Invitation = {
+  id?: string;
+  teamName: string;
+  matchType?: MATCH_TYPE;
+  inviterId: string;
+  partnerId: string;
+  status: INVITATION_STATUS;
+  createdAt: any; // Use appropriate type for Firestore timestamp
   expiresAt: Date;
+  confirmationToken?: string;
+  rejectionToken?: string;
 };
-
 // Story:
 // Every Sunday at 00:00, a new round is generated for the ongoing sports competition.
 // The competition consists of two players, Eric and Hans, who compete against each other in singles matches.
@@ -79,10 +93,6 @@ const generateRound = (
   const matches: Match[] = [];
   const participantIds = participants.map((p) => p.id);
   const numMatches = Math.floor(participantIds.length / 2);
-
-  const testGPTFrage = "hallo";
-
-  console.log("logged: matches", matches);
 
   return {
     startDate,
