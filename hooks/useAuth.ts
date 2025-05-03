@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "@/db";
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
   sendEmailVerification,
   sendPasswordResetEmail,
   User,
-  onAuthStateChanged,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { useAtom } from "jotai";
-import { userAtom, store } from "@/app/useAtoms";
+import { userAtom } from "@/app/useAtoms";
 import * as Types from "@/types";
+import {
+  signIn as nextAuthSignIn,
+  signOut as nextAuthSignOut,
+  useSession,
+} from "next-auth/react";
 
 // Use the DEFAULT_USER from the global store
 const DEFAULT_USER: Types.Player = {
@@ -28,47 +30,25 @@ export const useAuth = () => {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [verificationSent, setVerificationSent] = useState<boolean>(false);
+  const { data: session, status } = useSession();
 
   // Use the global userAtom from the store
   const [globalUser, setGlobalUser] = useAtom(userAtom);
 
+  // Update global user when session changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-
-      if (currentUser) {
-        try {
-          const userDoc = await getDoc(doc(db, "players", currentUser.uid));
-          const userData = userDoc.exists()
-            ? (userDoc.data() as Types.Player)
-            : {
-                ...DEFAULT_USER,
-                id: currentUser.uid,
-                name: currentUser.displayName || "New User",
-                email: currentUser.email || "",
-              };
-
-          const completeUserData = {
-            ...userData,
-            emailVerified: currentUser.emailVerified,
-          };
-
-          setGlobalUser(completeUserData);
-        } catch (err) {
-          console.error("Error fetching user data:", err);
-          setGlobalUser({
-            ...DEFAULT_USER,
-            id: currentUser.uid,
-            emailVerified: currentUser.emailVerified,
-          });
-        }
-      } else {
-        setGlobalUser(DEFAULT_USER);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [setGlobalUser]);
+    if (session?.user) {
+      setGlobalUser({
+        id: session.user.id,
+        name: session.user.name || "",
+        age: session.user.age || 0,
+        email: session.user.email || "",
+        emailVerified: session.user.emailVerified || false,
+      });
+    } else if (status === "unauthenticated") {
+      setGlobalUser(DEFAULT_USER);
+    }
+  }, [session, status, setGlobalUser]);
 
   const register = async (
     email: string,
@@ -79,6 +59,7 @@ export const useAuth = () => {
     setLoading(true);
     setError("");
     try {
+      // Create user with Firebase Auth first
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -86,6 +67,7 @@ export const useAuth = () => {
       );
       const currentUser = userCredential.user;
 
+      // Create user profile in Firestore
       const player: Types.Player = {
         id: currentUser.uid,
         name,
@@ -99,7 +81,7 @@ export const useAuth = () => {
         createdAt: new Date().toISOString(),
       });
 
-      setGlobalUser(player);
+      // Send verification email
       await sendEmailVerification(currentUser);
       setVerificationSent(true);
 
@@ -117,46 +99,25 @@ export const useAuth = () => {
   };
 
   const login = async (email: string, password: string) => {
+    console.log("login old?");
     setLoading(true);
     setError("");
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
+      // Use NextAuth to sign in which will use our Firebase credentials provider
+      const result = await nextAuthSignIn("firebase-credentials", {
         email,
-        password
-      );
+        password,
+        redirect: false,
+      });
 
-      const currentUser = userCredential.user;
-
-      if (!currentUser.emailVerified) {
-        await signOut(auth);
-        setError(
-          "Please verify your email before logging in. Check your inbox."
-        );
+      if (result?.error) {
+        setError(result.error);
         return null;
       }
 
-      const userDoc = await getDoc(doc(db, "players", currentUser.uid));
-      const userData = userDoc.exists()
-        ? (userDoc.data() as Types.Player)
-        : {
-            ...DEFAULT_USER,
-            id: currentUser.uid,
-            name: currentUser.displayName || "User",
-            email: currentUser.email || "",
-          };
-
-      const updatedUserData = {
-        ...userData,
-        emailVerified: currentUser.emailVerified,
-      };
-
-      await setDoc(doc(db, "players", currentUser.uid), updatedUserData);
-      setGlobalUser(updatedUserData);
-
-      return currentUser;
+      return result;
     } catch (err: any) {
-      setError("Invalid email or password. Please try again.");
+      setError(err.message || "Invalid email or password. Please try again.");
       return null;
     } finally {
       setLoading(false);
@@ -166,7 +127,8 @@ export const useAuth = () => {
   const logout = async () => {
     setLoading(true);
     try {
-      await signOut(auth);
+      // Use NextAuth to sign out
+      await nextAuthSignOut({ redirect: false });
       setGlobalUser(DEFAULT_USER);
       return true;
     } catch (err: any) {
@@ -181,9 +143,7 @@ export const useAuth = () => {
     setLoading(true);
     setError("");
     try {
-      const bla = await sendPasswordResetEmail(auth, email);
-
-      console.log("logged: bla", bla);
+      await sendPasswordResetEmail(auth, email);
       setVerificationSent(true);
       return true;
     } catch (err: any) {
@@ -199,9 +159,9 @@ export const useAuth = () => {
   };
 
   return {
-    user,
+    user: session?.user || null,
     error,
-    loading,
+    loading: loading || status === "loading",
     verificationSent,
     login,
     register,

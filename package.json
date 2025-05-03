@@ -17,6 +17,7 @@
     "jotai": "^2.12.2",
     "mailersend": "^2.3.0",
     "next": "15.2.2",
+    "next-auth": "^5.0.0-beta.27",
     "nodemailer": "^6.10.0",
     "openai": "^4.87.3",
     "react": "^19.0.0",

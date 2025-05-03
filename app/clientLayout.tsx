@@ -2,6 +2,7 @@
 
 import { Toaster } from "react-hot-toast";
 import JotaiProvider from "./components/JotaiProvider";
+import AuthProvider from "./components/AuthProvider";
 
 export default function ClientLayout({
   children,
@@ -9,9 +10,11 @@ export default function ClientLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <JotaiProvider>
-      {children}
-      <Toaster />
-    </JotaiProvider>
+    <AuthProvider>
+      <JotaiProvider>
+        {children}
+        <Toaster />
+      </JotaiProvider>
+    </AuthProvider>
   );
 }

@@ -1,8 +1,13 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) sports app project with Firebase and NextAuth integration.
 
 ## Getting Started
 
-First, run the development server:
+First, set up your environment variables:
+
+1. Copy `.env.local.example` to `.env.local`
+2. Update the values in `.env.local` with your own configuration
+
+Then, run the development server:
 
 ```bash
 npm run dev
@@ -16,7 +21,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Authentication
+
+This app uses a dual-layer authentication approach:
+
+1. **Firebase Authentication**: Handles user signup, email verification, and core authentication features
+2. **NextAuth.js**: Provides JWT session management with long-term persistence (1 year)
+
+### Key Authentication Features
+
+- Email/password authentication with Firebase
+- Email verification requirement
+- Persistent sessions via JWT with 1-year validity
+- Secure token storage in HTTP-only cookies
+- Automatic login via JWT for returning users
+- Password reset functionality
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

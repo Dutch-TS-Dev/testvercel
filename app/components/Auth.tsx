@@ -3,17 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
-import { sendMail } from "@/lib/mailer";
 import { toast } from "react-hot-toast";
 import { useAtom } from "jotai";
 import { authModeAtom, currentViewAtom } from "@/app/viewAtoms";
+import { useSession } from "next-auth/react";
 
 const Auth = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
     reset,
     clearErrors,
   } = useForm();
@@ -28,18 +27,26 @@ const Auth = () => {
     forgotPassword,
   } = useAuth();
 
+  // Get session status from NextAuth
+  const { status } = useSession();
+
   const [authMode, setAuthMode] = useAtom(authModeAtom);
   const [isLogin, setIsLogin] = useState<boolean>(authMode === "login");
   const [isForgotPassword, setIsForgotPassword] = useState<boolean>(
     authMode === "forgot-password"
   );
   const [resetSent, setResetSent] = useState<boolean>(false);
-
-  // const [isLogin, setIsLogin] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const [_, setCurrentView] = useAtom(currentViewAtom);
+
+  // Redirect to ladder view if authenticated
+  useEffect(() => {
+    if (status === "authenticated") {
+      setCurrentView("ladder");
+    }
+  }, [status, setCurrentView]);
 
   // Update states when authMode changes
   useEffect(() => {
@@ -92,21 +99,19 @@ const Auth = () => {
           );
         }
       } else if (isLogin) {
-        // Login process
-        const user = await login(data.email, data.password);
-        if (user) {
+        // Login process using NextAuth
+        const result = await login(data.email, data.password);
+        if (result && !result.error) {
           // Show success toast notification
           toast.success("Login successful! Redirecting...", {
             duration: 3000,
             position: "top-center",
           });
 
-          setTimeout(() => {
-            setCurrentView("ladder");
-          }, 1000);
+          // NextAuth session will cause a redirect via the useEffect above
         } else {
           // Error message will be set by the useAuth hook
-          setErrorMessage(authError);
+          setErrorMessage(authError || "Login failed. Please try again.");
         }
       } else {
         // Register process
@@ -114,7 +119,7 @@ const Auth = () => {
           data.email,
           data.password,
           data.name,
-          data.age
+          data.age || 0
         );
         if (newUser) {
           // Show success toast notification
@@ -125,16 +130,6 @@ const Auth = () => {
               position: "top-center",
             }
           );
-
-          // // After successful registration, send an admin notification email
-          // await sendMail({
-          //   from: "teamworkforever2025@gmail.com",
-          //   to: "jian.lu.ou@gmail.com",
-          //   subject: "New User Registration",
-          //   text: `A new user has registered:\n\nName: ${data.name}\nEmail: ${data.email}\nAge: ${data.age}\n\nUser needs to verify their email address.`,
-          //   attachments: [],
-          // });
-
           reset();
         } else {
           setErrorMessage(
@@ -316,56 +311,14 @@ const Auth = () => {
                   )}
                 </div>
               )}
-              {/* {!isLogin && !isForgotPassword && (
-                <>
-                  <div className="group clearfix slideInRight animated">
-                    <label className="pull-left" htmlFor="mobile-phone">
-                      <span className="ion-ios-telephone-outline"></span> Mobile
-                      phone
-                    </label>
-                    <input
-                      className="pull-right input-underline"
-                      id="mobile-phone"
-                      type="tel"
-                      {...register("phoneNumber")}
-                    />
-                  </div>
-
-                  <div className="group clearfix slideInLeft animated">
-                    <label className="pull-left" htmlFor="allow-email">
-                      <span className="ion-ios-email-outline"></span> Email
-                      contact
-                    </label>
-                    <input
-                      className="pull-right input-underline"
-                      id="allow-email"
-                      type="text"
-                      {...register("emailContact")}
-                    />
-                  </div>
-
-                  <div className="group clearfix slideInRight animated">
-                    <label className="pull-left" htmlFor="line-id">
-                      <span className="ion-chatbubble-working"></span> LINE ID
-                    </label>
-                    <input
-                      className="pull-right input-underline"
-                      id="line-id"
-                      type="text"
-                      placeholder="LINE ID"
-                      {...register("lineId")}
-                    />
-                  </div>
-                </>
-              )} */}
 
               <div className="action flipInY animated">
                 <button
                   type="submit"
                   className="btn"
-                  disabled={loading || (isForgotPassword && resetSent)}
+                  disabled={loading || status === "loading" || (isForgotPassword && resetSent)}
                 >
-                  {loading
+                  {loading || status === "loading"
                     ? "Loading..."
                     : isForgotPassword
                     ? "Reset Password"
