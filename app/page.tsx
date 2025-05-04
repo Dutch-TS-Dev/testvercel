@@ -262,7 +262,7 @@ const Home = () => {
               >
                 <span className="ion-ios-gear-outline"></span> Settings
               </a>
-              {/* <a
+              <a
                 href="#credits"
                 onClick={(e) => {
                   e.preventDefault();
@@ -270,7 +270,7 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-information-outline"></span> Credits
-              </a> */}
+              </a>
               {/* <a
                 href="#login"
                 onClick={(e) => {
@@ -471,9 +471,9 @@ const Home = () => {
             </div>
 
             <div className="players">
-              {/* {players.map((player, i) => (
+              {players.map((player, i) => (
                 <LadderRow key={i} {...player} />
-              ))} */}
+              ))}
             </div>
           </div>
           <div

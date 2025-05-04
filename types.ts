@@ -35,7 +35,7 @@ export type Match = {
   winner?: 1 | 2;
   participant1_ID: string;
   participant2_ID: string;
-  reporter: 1 | 2;
+  reporterId: string; // ID of the player who reported the match
   score: string; // 11-2-11-3-
   date: Date;
   isBye?: boolean; // true if the match is a bye

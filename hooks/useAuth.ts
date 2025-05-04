@@ -100,6 +100,7 @@ export const useAuth = () => {
 
   const login = async (email: string, password: string) => {
     console.log("login old?");
+
     setLoading(true);
     setError("");
     try {

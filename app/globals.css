@@ -1364,6 +1364,12 @@ body {
   outline: none;
 }
 
+#register-email {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* Ensure webkit autofill doesn't change background */
 .register .forms .group input:-webkit-autofill {
   -webkit-text-fill-color: #fff !important;
