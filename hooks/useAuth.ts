@@ -99,25 +99,27 @@ export const useAuth = () => {
   };
 
   const login = async (email: string, password: string) => {
-    console.log("login old?");
-
     setLoading(true);
     setError("");
     try {
-      // Use NextAuth to sign in which will use our Firebase credentials provider
+      // Use NextAuth to sign in
       const result = await nextAuthSignIn("firebase-credentials", {
         email,
         password,
         redirect: false,
       });
 
+      // Add more detailed logging
+
       if (result?.error) {
         setError(result.error);
         return null;
       }
 
-      return result;
+      // Return a success object even if result is minimal
+      return result || { success: true };
     } catch (err: any) {
+      console.error("Login error:", err);
       setError(err.message || "Invalid email or password. Please try again.");
       return null;
     } finally {

@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
 import { currentViewAtom, ViewType } from "@/app/viewAtoms";
 import RoundsViewer from "./components/Viewer";
+import { ScrollToBottomArrow } from "./components/ScrollDown";
 
 // Define types
 interface DatetimeState {
@@ -46,7 +47,7 @@ const Home = () => {
     const newTitle = {
       // welcome: 'Home',
       join: "Join",
-      auth: "Register",
+      auth: "Sign in",
       ladder: "Ladder",
       profile: "Profile",
       matches: "Matches",
@@ -66,12 +67,6 @@ const Home = () => {
   const toggleSidebar = () => {
     setSidebarActive(!sidebarActive);
     setNavActive(false);
-  };
-
-  const handleNavItemClick = (pageName: string, title: string) => {
-    setActiveHtml(pageName || "welcome");
-    setPageTitle(title);
-    setNavActive(!navActive);
   };
 
   const handleSideNavClick = (pageName: string, title: string) => {
@@ -462,6 +457,7 @@ const Home = () => {
               <a href="#" className="tab active">
                 Teams
               </a>
+
               {/* <a href="#" className="tab">
                 Messages
               </a>
@@ -717,6 +713,7 @@ const Home = () => {
             <i className="ion-ios-plus-empty"></i>
            </a>
         </div> */}
+        {/* <ScrollToBottomArrow /> */}
       </div>
     </div>
   );

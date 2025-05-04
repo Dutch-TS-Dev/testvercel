@@ -45,8 +45,6 @@ export const {
 
           const currentUser = userCredential.user;
 
-          console.log("logged: currentUser", currentUser);
-
           // Check if email is verified
           if (!currentUser.emailVerified) {
             // Send verification email again
@@ -77,15 +75,16 @@ export const {
           // Send a clean error message to the client
           if (
             error.code === "auth/user-not-found" ||
-            error.code === "auth/wrong-password"
+            error.code === "auth/wrong-password" ||
+            error.code === "auth/invalid-credential"
           ) {
-            throw new Error("Invalid email or password");
+            return null;
           } else if (error.code === "auth/too-many-requests") {
-            throw new Error("Too many login attempts. Please try again later");
+            return null;
           } else if (error.message) {
-            throw new Error(error.message);
+            return null;
           } else {
-            throw new Error("Authentication failed. Please try again.");
+            return null;
           }
         }
       },

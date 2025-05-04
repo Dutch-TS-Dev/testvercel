@@ -57,6 +57,9 @@ const Auth = () => {
   // Update error message when authError changes
   useEffect(() => {
     if (authError) {
+      if (authError === "CredentialsSignin") {
+        return setErrorMessage("wrong password");
+      }
       setErrorMessage(authError);
     }
   }, [authError]);
@@ -101,9 +104,10 @@ const Auth = () => {
       } else if (isLogin) {
         // Login process using NextAuth
         const result = await login(data.email, data.password);
+
         if (result && !result.error) {
           // Show success toast notification
-          toast.success("Login successful! Redirecting...", {
+          toast.success("Login successful!.", {
             duration: 3000,
             position: "top-center",
           });
@@ -187,7 +191,7 @@ const Auth = () => {
       <div className="content">
         <div className="html register visible relative">
           {errorMessage && (
-            <div className="error-message flipInX animated absolute -top-23 left-0 w-full">
+            <div className="pl-6 pt-2 error-message flipInX animated absolute -top-23 left-0 w-full">
               {errorMessage}
             </div>
           )}
@@ -316,7 +320,11 @@ const Auth = () => {
                 <button
                   type="submit"
                   className="btn"
-                  disabled={loading || status === "loading" || (isForgotPassword && resetSent)}
+                  disabled={
+                    loading ||
+                    status === "loading" ||
+                    (isForgotPassword && resetSent)
+                  }
                 >
                   {loading || status === "loading"
                     ? "Loading..."

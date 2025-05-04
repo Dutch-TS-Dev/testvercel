@@ -78,7 +78,7 @@ const Join: React.FC<JoinPageProps> = () => {
     if (user?.id) {
       checkExistingInvitations();
     }
-  }, [user]);
+  }, []);
 
   const checkExistingInvitations = async () => {
     setIsLoading(true);
