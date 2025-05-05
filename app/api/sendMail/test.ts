@@ -1,8 +1,3 @@
-// sendEmail.ts
-
-const RESEND_API_KEY = "re_C721zumG_JkBYo51YHqkqLL6JESQyuitg"; // replace with your actual API key
-const RESEND_API_URL = "https://api.resend.com/emails";
-
 export async function sendEmail({
   to,
   subject,
@@ -14,10 +9,10 @@ export async function sendEmail({
   html: string;
   from?: string;
 }) {
-  const response = await fetch(RESEND_API_URL, {
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
+      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -44,3 +39,18 @@ export async function sendEmail({
 // })
 //   .then((result) => console.log("Email sent successfully:", result))
 //   .catch((error) => console.error("Failed to send email:", error));
+
+// Lookup by UID
+const ddd = async () => {
+  const userRecord = await getAuth().getUserByEmail(
+    "oscar.vanvelsen@gmail.com"
+  );
+
+  console.log("logged: userRecord", userRecord);
+};
+ddd();
+
+// // Or lookup by email
+// // const userRecord = await getAuth().getUserByEmail(email);
+
+// console.log("Email verified:", userRecord.emailVerified);

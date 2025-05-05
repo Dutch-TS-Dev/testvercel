@@ -17,9 +17,6 @@ import { serverTimestamp } from "firebase/firestore";
 import { getDocument, getDocuments, setDocument, uuid } from "@/db";
 import { toast } from "react-hot-toast";
 
-// Import the sendMail function
-import { sendMail } from "@/lib/mailer";
-
 // Jotai atoms for form state
 const stepAtom = atom<number>(1); // 1: Info, 2: Form, 3: Confirmation
 
@@ -47,6 +44,14 @@ enum PARTICIPATION_STEPS {
   CONFIRMATION = 3,
 }
 
+// Extended invitation status to include role
+enum EXTENDED_INVITATION_STATUS {
+  PENDING_INVITER = "PENDING_INVITER",
+  PENDING_INVITEE = "PENDING_INVITEE",
+  ACCEPTED = "ACCEPTED",
+  REJECTED = "REJECTED",
+}
+
 // Join Page Component
 const Join: React.FC<JoinPageProps> = () => {
   const [user] = useAtom(userAtom);
@@ -55,10 +60,14 @@ const Join: React.FC<JoinPageProps> = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [invitationStatus, setInvitationStatus] = useAtom(invitationStatusAtom);
   const [partnerName, setPartnerName] = useState("");
+  const [teamName, setTeamName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const setCurrentView = useSetAtom(currentViewAtom);
   const setAuthMode = useSetAtom(authModeAtom);
+  const [overRulingStatus, setOverRulingStatus] = useState<
+    EXTENDED_INVITATION_STATUS | undefined
+  >();
 
   // React Hook Form setup
   const {
@@ -78,7 +87,7 @@ const Join: React.FC<JoinPageProps> = () => {
     if (user?.id) {
       checkExistingInvitations();
     }
-  }, []);
+  }, [user]);
 
   const checkExistingInvitations = async () => {
     setIsLoading(true);
@@ -92,75 +101,105 @@ const Join: React.FC<JoinPageProps> = () => {
         }
       );
 
-      // Filter for relevant status values
-      const relevantInviterInvitations = inviterInvitations.filter((inv) =>
-        Object.values(INVITATION_STATUS).includes(inv.status)
+      // Check invitations where the user is the partner/invitee
+      const partnerInvitations = await getDocuments<Invitation>(
+        COLLECTIONS.INVITATIONS,
+        {
+          partnerId: user.id,
+        }
       );
 
-      if (relevantInviterInvitations.length > 0) {
-        // Get invitations where user is the partner
-        const partnerInvitations = await getDocuments<Invitation>(
-          COLLECTIONS.INVITATIONS,
-          {
-            partnerId: user.id,
-          }
-        );
+      // Process inviter invitations
+      if (inviterInvitations.length > 0) {
+        // Sort by most recent first
+        const sortedInvitations = inviterInvitations.sort((a, b) => {
+          const dateA = a.createdAt?.toDate
+            ? a.createdAt.toDate()
+            : new Date(0);
+          const dateB = b.createdAt?.toDate
+            ? b.createdAt.toDate()
+            : new Date(0);
+          return dateB.getTime() - dateA.getTime();
+        });
 
-        if (partnerInvitations.length > 0) {
-          // Handle case of most recent invitation
-          const [invitation] = partnerInvitations.sort((a, b) => {
-            const dateA = a.createdAt?.toDate
-              ? a.createdAt.toDate()
-              : new Date(0);
-            const dateB = b.createdAt?.toDate
-              ? b.createdAt.toDate()
-              : new Date(0);
-            return dateB.getTime() - dateA.getTime(); // Sort descending (newest first)
-          });
+        const mostRecentInvitation = sortedInvitations[0];
 
-          if (invitation) {
-            // Fetch partner information since it's not stored in invitation
-            const partner = await getPlayerInfo(invitation.partnerId);
-
-            if (partner) {
-              setPartnerName(partner.name || "Partner");
-            } else {
-              // Fallback if partner info can't be retrieved
-              setPartnerName("Partner");
-            }
-
-            setInvitationStatus(invitation.status as INVITATION_STATUS);
-            setGameType(MATCH_TYPE.DOUBLES);
-          }
+        // Get partner info
+        const partner = await getPlayerInfo(mostRecentInvitation.partnerId);
+        if (partner) {
+          setPartnerName(partner.name || "Partner");
         }
+
+        // Set team name if available
+        if (mostRecentInvitation.teamName) {
+          console.log("mostRecentInvitation");
+          console.log(mostRecentInvitation);
+          console.log("");
+
+          setTeamName(mostRecentInvitation.teamName);
+        }
+
+        // Determine status based on invitation status
+        if (mostRecentInvitation.status === INVITATION_STATUS.ACCEPTED) {
+          setOverRulingStatus(EXTENDED_INVITATION_STATUS.ACCEPTED);
+        } else if (mostRecentInvitation.status === INVITATION_STATUS.PENDING) {
+          setOverRulingStatus(EXTENDED_INVITATION_STATUS.PENDING_INVITER);
+        } else if (mostRecentInvitation.status === INVITATION_STATUS.REJECTED) {
+          setOverRulingStatus(EXTENDED_INVITATION_STATUS.REJECTED);
+        }
+
+        setInvitationStatus(mostRecentInvitation.status as INVITATION_STATUS);
+        setGameType(MATCH_TYPE.DOUBLES);
+      }
+      // If no inviter invitations, check partner invitations
+      else if (partnerInvitations.length > 0) {
+        // Sort by most recent first
+        const sortedPartnerInvitations = partnerInvitations.sort((a, b) => {
+          const dateA = a.createdAt?.toDate
+            ? a.createdAt.toDate()
+            : new Date(0);
+          const dateB = b.createdAt?.toDate
+            ? b.createdAt.toDate()
+            : new Date(0);
+          return dateB.getTime() - dateA.getTime();
+        });
+
+        const mostRecentPartnerInvitation = sortedPartnerInvitations[0];
+
+        // Get inviter info
+        const inviter = await getPlayerInfo(
+          mostRecentPartnerInvitation.inviterId
+        );
+        if (inviter) {
+          setPartnerName(inviter.name || "Partner");
+        }
+
+        // Set team name if available
+        if (mostRecentPartnerInvitation.teamName) {
+          setTeamName(mostRecentPartnerInvitation.teamName);
+        }
+
+        // Determine status based on invitation status
+        if (mostRecentPartnerInvitation.status === INVITATION_STATUS.ACCEPTED) {
+          setOverRulingStatus(EXTENDED_INVITATION_STATUS.ACCEPTED);
+        } else if (
+          mostRecentPartnerInvitation.status === INVITATION_STATUS.PENDING
+        ) {
+          setOverRulingStatus(EXTENDED_INVITATION_STATUS.PENDING_INVITEE);
+        } else if (
+          mostRecentPartnerInvitation.status === INVITATION_STATUS.REJECTED
+        ) {
+          setOverRulingStatus(EXTENDED_INVITATION_STATUS.REJECTED);
+        }
+
+        setInvitationStatus(
+          mostRecentPartnerInvitation.status as INVITATION_STATUS
+        );
+        setGameType(MATCH_TYPE.DOUBLES);
       } else {
-        // Check if user is a partner in any accepted invitation
-        const acceptedPartnerInvitations = await getDocuments<Invitation>(
-          COLLECTIONS.INVITATIONS,
-          {
-            partnerId: user.id,
-            status: INVITATION_STATUS.ACCEPTED,
-          }
-        );
-
-        if (acceptedPartnerInvitations.length > 0) {
-          const [partnerInvitation] = acceptedPartnerInvitations;
-
-          // Need to fetch inviter information
-          const inviter = await getPlayerInfo(partnerInvitation.inviterId);
-
-          if (inviter) {
-            setPartnerName(inviter.name || "Partner");
-          } else {
-            // Fallback if inviter info can't be retrieved
-            setPartnerName("Partner");
-          }
-
-          setInvitationStatus(INVITATION_STATUS.ACCEPTED);
-          setGameType(MATCH_TYPE.DOUBLES);
-        } else {
-          setInvitationStatus(undefined);
-        }
+        // No invitations found
+        setOverRulingStatus(undefined);
+        setInvitationStatus(undefined);
       }
     } catch (error) {
       console.error("Error checking existing invitations:", error);
@@ -175,100 +214,53 @@ const Join: React.FC<JoinPageProps> = () => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
+    // Destructure form data
+    const { teamName, partnerEmail } = data;
+
     // Check if partner email is the same as current user's email
-    if (user?.email === data.partnerEmail) {
+    if (user?.email === partnerEmail) {
       toast.error("You cannot be your own partner!");
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // Query Firebase Auth to find the partner by email
-      const { getAuth } = await import("firebase/auth");
-      const auth = getAuth();
-      const { fetchSignInMethodsForEmail } = await import("firebase/auth");
-
-      // Check if the email exists in Firebase Auth
-      const methods = await fetchSignInMethodsForEmail(auth, data.partnerEmail);
-
-      if (methods.length === 0) {
-        toast.error("No verified player found with this email!");
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Get partner profile from Firestore after confirming they exist in Auth
-      const partnerPlayer = await getDocument<Player>(COLLECTIONS.PLAYERS, {
-        email: data.partnerEmail,
-      });
-
-      if (!partnerPlayer) {
-        toast.error(
-          "Player exists but profile is incomplete. Please try again later."
-        );
-        setIsSubmitting(false);
-        return;
-      }
-
       const toastId = toast.loading("Sending invitation...");
 
-      const invite: Invitation = {
-        id: uuid(),
-        teamName: data.teamName,
-        matchType: gameType,
-        inviterId: user.id,
-        partnerId: partnerPlayer.id,
-        status: INVITATION_STATUS.PENDING,
-        createdAt: serverTimestamp(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expires in 7 days
-        confirmationToken: uuid(),
-        rejectionToken: uuid(), // acbd11111
-      };
-
-      // Save the invitation
-      await setDocument(COLLECTIONS.INVITATIONS, invite);
-
-      const confirmUrl = `http://localhost:3000/api/invite?confirm=${invite.confirmationToken}`;
-      const rejectUrl = `http://localhost:3000/api/invite?reject=${invite.rejectionToken}`;
-
-      // Send email to partner
-      sendMail({
-        from:
-          process.env.NEXT_PUBLIC_EMAIL_FROM || "noreply@pickleball-ladder.com",
-        to: data.partnerEmail,
-        subject: `Team Invitation: ${
-          user.name || user.email
-        } wants you to join their pickleball team!`,
-        text: `
-Hello ${partnerPlayer.name || data.partnerEmail},
-
-${user.name || user.email} has invited you to join their pickleball team "${
-          data.teamName
-        }" for the upcoming ladder competition.
-
-To accept this invitation, please click here: ${confirmUrl}
-
-To decline this invitation, please click here: ${rejectUrl}
-
-This invitation will expire in 7 days.
-
-Best regards,
-The Pickleball Ladder Team
-        `,
-        attachments: [],
+      // Send invitation request to the backend API
+      const response = await fetch("/api/createteam", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: partnerEmail,
+          teamName: teamName,
+          userId: user.id,
+        }),
       });
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send invitation");
+      }
+
       toast.success("Invitation sent successfully!", { id: toastId });
-      console.log("Team invitation sent successfully to", data.partnerEmail);
+      console.log("Team invitation sent successfully to", partnerEmail);
 
       // Update invitation status and move to confirmation step
       setInvitationStatus(INVITATION_STATUS.PENDING);
-      setPartnerName(partnerPlayer.name || data.partnerEmail);
+      setOverRulingStatus(EXTENDED_INVITATION_STATUS.PENDING_INVITER);
+      setPartnerName(result.partner?.name || partnerEmail);
+      setTeamName(teamName);
       setStep(3);
     } catch (error) {
       console.error("Error creating team invitation:", error);
       toast.error(
-        "An error occurred while sending the invitation. Please try again."
+        error instanceof Error
+          ? error.message
+          : "An error occurred while sending the invitation. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -299,14 +291,24 @@ The Pickleball Ladder Team
     router.push("/");
   };
 
-  // Render invitation status message
+  // Updated renderInvitationStatusMessage function using overRulingStatus
   const renderInvitationStatusMessage = () => {
-    switch (invitationStatus) {
-      case INVITATION_STATUS.PENDING:
+    switch (overRulingStatus) {
+      case EXTENDED_INVITATION_STATUS.PENDING_INVITER:
         return (
           <div className="invitation-status pending flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
-              Your partner has not confirmed the invitation yet. Please wait.
+              * You have already sent an invitation. As soon as they accept it
+              your team will be added to the ladder
+            </p>
+          </div>
+        );
+      case EXTENDED_INVITATION_STATUS.PENDING_INVITEE:
+        return (
+          <div className="invitation-status pending flipInX animated mt-[30px] small-info-text">
+            <p className="text-center">
+              You have received a team invitation from {partnerName} for team "
+              {teamName}". Please check your notifications to accept or decline.
             </p>
             <div className="action flipInY animated">
               <button className="btn" onClick={navigateToHome}>
@@ -315,21 +317,30 @@ The Pickleball Ladder Team
             </div>
           </div>
         );
-      case INVITATION_STATUS.ACCEPTED:
+      case EXTENDED_INVITATION_STATUS.ACCEPTED:
         return (
           <div className="invitation-status accepted flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
-              You have already formed a team with {partnerName}. At the moment,
-              you cannot change your partner.
+              Welcome aboard! Your teammember has accepted your invite and *
+              {teamName}* is ready to compete
+            </p>
+            <p className="text-center">
+              You will receive match information as soon as possible.
             </p>
             <div className="action flipInY animated">
-              <button className="btn" onClick={navigateToHome}>
+              <button className="btn" onClick={() => router.push("/ladder")}>
+                Go to Ladder
+              </button>
+              <button
+                className="btn btn-secondary mt-2"
+                onClick={navigateToHome}
+              >
                 Return to Home
               </button>
             </div>
           </div>
         );
-      case INVITATION_STATUS.REJECTED:
+      case EXTENDED_INVITATION_STATUS.REJECTED:
         return (
           <div className="invitation-status rejected flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
@@ -341,6 +352,7 @@ The Pickleball Ladder Team
                 className="btn"
                 onClick={() => {
                   setInvitationStatus(undefined);
+                  setOverRulingStatus(undefined);
                   setStep(2);
                 }}
               >
@@ -412,14 +424,7 @@ The Pickleball Ladder Team
       {step === 1 && (
         <div className="html visible">
           <div className="title bounceInDown animated">Ladder Information</div>
-          {/* @jian: wenn einladung nach partner geschickt: dan text: "wir warten auf genehmigung deines partner
-          fuer team ${teamname}" */}
           <div className="info-content flipInX animated">
-            <p>
-              Welcome to the Pickleball Ladder Competition! Here are some key
-              details:
-            </p>
-
             <ul className="info-list">
               <li>
                 <strong>Singles:</strong> Compete one-on-one against opponents
@@ -499,7 +504,7 @@ The Pickleball Ladder Team
                 </button>
               </div>
             </div>
-          ) : invitationStatus ? (
+          ) : overRulingStatus ? (
             // Show status message if user has an existing invitation
             renderInvitationStatusMessage()
           ) : (
@@ -596,16 +601,10 @@ The Pickleball Ladder Team
               address.
             </p>
             <p>
-              As soon as they accept the invitation, both of you will receive a
-              confirmation email. If they decline, you'll be notified so you can
-              invite someone else.
+              As soon as your teammate accepts the invitation, both of you will
+              receive a confirmation email. If they decline, you'll be notified
+              so you can invite someone else.
             </p>
-            <p>The invitation will expire in 7 days if no action is taken.</p>
-            <div className="action flipInY animated">
-              <button className="btn" onClick={navigateToHome}>
-                Return to Home
-              </button>
-            </div>
           </div>
         </div>
       )}

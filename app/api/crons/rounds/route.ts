@@ -13,6 +13,7 @@ const COLLECTIONS = {
   MATCHES: "MATCHES",
   ROUNDS: "ROUNDS",
   LADDERS: "LADDERS",
+  INVITATIONS: "LADDERS",
 };
 
 // Function to create a round with matches based on participants
@@ -332,7 +333,7 @@ const start = async () => {
   await setDocument<Round>(COLLECTIONS.ROUNDS, firstRound);
 };
 
-start();
+// start();
 
 // Export functions for use in other files
 export { createRound, getFirstRound, scheduleSeason, COLLECTIONS };

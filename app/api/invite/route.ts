@@ -21,10 +21,13 @@ export async function GET(req: Request) {
     });
 
     if (invitation) {
-      invitation?.status === INVITATION_STATUS.ACCEPTED;
-      return await setDocument(COLLECTIONS.INVITATIONS, invitation);
+      invitation.status = INVITATION_STATUS.ACCEPTED;
+      await setDocument(COLLECTIONS.INVITATIONS, invitation);
+      return NextResponse.json({
+        status: 200,
+        message: "Invitation confirmed",
+      });
     }
-    return NextResponse.json({ status: 200, message: "Invitation confirmed" });
   }
 
   if (reject) {
@@ -32,7 +35,7 @@ export async function GET(req: Request) {
       rejectionToken: reject,
     });
     if (invitation) {
-      invitation?.status === INVITATION_STATUS.REJECTED;
+      invitation.status = INVITATION_STATUS.REJECTED;
       await setDocument(COLLECTIONS.INVITATIONS, invitation);
       return NextResponse.json({ status: 200, message: "Invitation rejected" });
     }

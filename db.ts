@@ -48,6 +48,10 @@ const app = initializeApp({
   measurementId: "G-CZJBPKPD3L",
 });
 
+export const getNowInSeconds = (): number => {
+  return Math.floor(Date.now() / 1000);
+};
+
 export async function setDocument<Type>(
   collection: string,
   object: Type & {
@@ -67,10 +71,6 @@ export async function setDocument<Type>(
         throw new Error(`COICLOUD ERROR: the key ${k} has undefined as value`);
       }
     });
-
-    const getNowInSeconds = (): number => {
-      return Math.floor(Date.now() / 1000);
-    };
 
     const nowInSeconds = getNowInSeconds();
 

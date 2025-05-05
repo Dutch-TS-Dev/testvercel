@@ -15,6 +15,7 @@ import {
 export function FirebaseAdapter(db: Firestore): Adapter {
   return {
     async createUser(user) {
+      console.log("cu happens");
       const userRef = doc(db, "nextauth_users", user.id);
       await setDoc(userRef, {
         ...user,

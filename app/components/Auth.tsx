@@ -58,7 +58,9 @@ const Auth = () => {
   useEffect(() => {
     if (authError) {
       if (authError === "CredentialsSignin") {
-        return setErrorMessage("wrong password");
+        return setErrorMessage(
+          "wrong password or non existing/or unverified email"
+        );
       }
       setErrorMessage(authError);
     }

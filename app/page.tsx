@@ -6,7 +6,7 @@ import { atom, useAtom } from "jotai";
 import { userAtom } from "./useAtoms";
 import LadderRow from "./components/ladderRow";
 import Join from "./components/Join";
-import { players } from "./data/dummy";
+import { teams } from "./data/dummy";
 import Auth from "./components/Auth";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-hot-toast";
@@ -239,7 +239,7 @@ const Home = () => {
               >
                 <span className="ion-ios-compose-outline"></span> Compose
               </a> */}
-              <a
+              {/* <a
                 href="#profile"
                 onClick={(e) => {
                   e.preventDefault();
@@ -247,7 +247,7 @@ const Home = () => {
                 }}
               >
                 <span className="ion-ios-person-outline"></span> Profile
-              </a>
+              </a> */}
               <a
                 href="#settings"
                 onClick={(e) => {
@@ -467,7 +467,7 @@ const Home = () => {
             </div>
 
             <div className="players">
-              {players.map((player, i) => (
+              {teams.map((player, i) => (
                 <LadderRow key={i} {...player} />
               ))}
             </div>

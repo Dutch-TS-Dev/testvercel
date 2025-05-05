@@ -9,6 +9,7 @@ import { auth, db } from "@/db";
 import { doc, getDoc } from "firebase/firestore";
 import type { DefaultSession } from "next-auth";
 import type { Player } from "@/types";
+import { COLLECTIONS } from "@/app/api/crons/rounds/route";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -55,7 +56,9 @@ export const {
           }
 
           // Fetch user data from Firestore
-          const userDoc = await getDoc(doc(db, "players", currentUser.uid));
+          const userDoc = await getDoc(
+            doc(db, COLLECTIONS.PLAYERS, currentUser.uid)
+          );
           if (!userDoc.exists()) {
             throw new Error("User profile not found.");
           }

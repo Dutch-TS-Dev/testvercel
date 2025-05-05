@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { auth, db } from "@/db";
+import { auth, db, setDocument } from "@/db";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -15,6 +15,7 @@ import {
   signOut as nextAuthSignOut,
   useSession,
 } from "next-auth/react";
+import { COLLECTIONS } from "@/app/api/crons/rounds/route";
 
 // Use the DEFAULT_USER from the global store
 const DEFAULT_USER: Types.Player = {
@@ -26,19 +27,19 @@ const DEFAULT_USER: Types.Player = {
 };
 
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [verificationSent, setVerificationSent] = useState<boolean>(false);
   const { data: session, status } = useSession();
 
+  console.log("logged: session", session);
   // Use the global userAtom from the store
-  const [globalUser, setGlobalUser] = useAtom(userAtom);
+  const [user, setUser] = useAtom(userAtom);
 
   // Update global user when session changes
   useEffect(() => {
     if (session?.user) {
-      setGlobalUser({
+      setUser({
         id: session.user.id,
         name: session.user.name || "",
         age: session.user.age || 0,
@@ -46,9 +47,9 @@ export const useAuth = () => {
         emailVerified: session.user.emailVerified || false,
       });
     } else if (status === "unauthenticated") {
-      setGlobalUser(DEFAULT_USER);
+      setUser(DEFAULT_USER);
     }
-  }, [session, status, setGlobalUser]);
+  }, [session, status, setUser]);
 
   const register = async (
     email: string,
@@ -76,10 +77,7 @@ export const useAuth = () => {
         emailVerified: currentUser.emailVerified,
       };
 
-      await setDoc(doc(db, "players", currentUser.uid), {
-        ...player,
-        createdAt: new Date().toISOString(),
-      });
+      await setDocument("PLAYERS", player);
 
       // Send verification email
       await sendEmailVerification(currentUser);
@@ -132,7 +130,7 @@ export const useAuth = () => {
     try {
       // Use NextAuth to sign out
       await nextAuthSignOut({ redirect: false });
-      setGlobalUser(DEFAULT_USER);
+      setUser(DEFAULT_USER);
       return true;
     } catch (err: any) {
       setError(err.message || "Logout failed. Please try again later.");

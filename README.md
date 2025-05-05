@@ -1,3 +1,5 @@
+## add later: adding partner: for which league???? in backend
+
 This is a [Next.js](https://nextjs.org) sports app project with Firebase and NextAuth integration.
 
 ## Getting Started
