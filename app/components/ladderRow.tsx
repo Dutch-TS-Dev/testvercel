@@ -1,5 +1,3 @@
-// Simplified LadderRow without the component structure
-// and without unnecessary refs
 const LadderRow = ({
   name,
   teamId,
@@ -10,12 +8,14 @@ const LadderRow = ({
   rank: number;
 }) => {
   // Alternate animation direction based on rank
-  const animationDirection = Number(!!rank) % 2 === 0 ? "Right" : "Left";
+  // Fix: Use rank directly instead of Number(!!rank)
+  const animationDirection = rank % 2 === 0 ? "Right" : "Left";
 
   // Dynamically determine pull direction based on rank
-  const photoDirection = Number(!!rank) % 2 === 0 ? "right" : "left";
-  const descDirection = Number(!!rank) % 2 === 0 ? "right" : "left";
-  const idleDirection = Number(!!rank) % 2 === 0 ? "left" : "right";
+  // The original HTML shows all photos are pull-left
+  const photoDirection = "left";
+  const descDirection = "left";
+  const idleDirection = "right";
 
   // Logic for the Trophy-Icon
   const getTrophyIcon = () => {
@@ -43,18 +43,38 @@ const LadderRow = ({
     }
   };
 
+  // Calculate background color based on rank for visual variety
+  const getPhotoStyle = () => {
+    if (rank <= 3) {
+      return {
+        border: "1px solid rgba(242, 51, 99,0.7)",
+        borderRadius: "50%",
+        color: "rgb(255,255,255)",
+      };
+    }
+
+    // Generate a semi-random color based on the rank
+    const hue1 = (rank * 25) % 256;
+    const hue2 = (rank * 40) % 256;
+    const hue3 = (rank * 60) % 256;
+    const color = `rgb(${120 + (hue1 % 56)}, ${120 + (hue2 % 56)}, ${
+      120 + (hue3 % 56)
+    })`;
+
+    return {
+      backgroundColor: "transparent",
+      backgroundImage: `linear-gradient(45deg, ${color}, transparent 45%, ${color})`,
+      borderColor: color,
+      color: color,
+      borderRadius: "50%",
+    };
+  };
+
   return (
     <div
       className={`player clearfix rotateInDown${animationDirection} animated`}
     >
-      <div
-        className={`photo pull-${photoDirection}`}
-        style={{
-          border: "1px solid rgba(242, 51, 99,0.7)",
-          borderRadius: "50%",
-          color: "rgb(255,255,255)",
-        }}
-      >
+      <div className={`photo pull-${photoDirection}`} style={getPhotoStyle()}>
         {name === "UnKnown Team" ? "?" : name.slice(0, 1)}
       </div>
       <div className={`desc pull-${descDirection}`}>
@@ -68,4 +88,5 @@ const LadderRow = ({
     </div>
   );
 };
+
 export default LadderRow;
