@@ -15,7 +15,6 @@ import {
   signOut as nextAuthSignOut,
   useSession,
 } from "next-auth/react";
-import { COLLECTIONS } from "@/app/api/crons/rounds/route";
 
 // Use the DEFAULT_USER from the global store
 const DEFAULT_USER: Types.Player = {

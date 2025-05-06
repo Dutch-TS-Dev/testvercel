@@ -1,4 +1,4 @@
-import type { Adapter } from "next-auth/adapters";
+import type { Adapter, AdapterSession } from "next-auth/adapters";
 import {
   Firestore,
   doc,
@@ -159,10 +159,13 @@ export function FirebaseAdapter(db: Firestore): Adapter {
       );
       const sessionData = created.data()!;
 
+      // Fix: Ensure we return an object with the required AdapterSession properties
       return {
         ...sessionData,
+        sessionToken: session.sessionToken,
+        userId: session.userId,
         expires: new Date(sessionData.expires),
-      };
+      } as AdapterSession;
     },
 
     async getSessionAndUser(sessionToken) {
@@ -178,6 +181,7 @@ export function FirebaseAdapter(db: Firestore): Adapter {
         expires: new Date(sessionData.expires),
       };
 
+      // @ts-ignore
       const userSnap = await getDoc(doc(db, "nextauth_users", session.userId));
 
       if (!userSnap.exists()) return null;
@@ -211,10 +215,14 @@ export function FirebaseAdapter(db: Firestore): Adapter {
       if (!updated.exists()) return null;
 
       const sessionData = updated.data()!;
+
+      // Fix: Ensure we return an object with the required AdapterSession properties
       return {
         ...sessionData,
+        sessionToken: session.sessionToken,
+        userId: session.userId,
         expires: new Date(sessionData.expires),
-      };
+      } as AdapterSession;
     },
 
     async deleteSession(sessionToken) {

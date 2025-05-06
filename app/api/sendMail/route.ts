@@ -1,7 +1,7 @@
-import { Invitation, Player } from "@/types";
+import { COLLECTIONS, Invitation, Player } from "@/types";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { COLLECTIONS } from "../crons/rounds/route";
+
 import { getDocument } from "@/db";
 
 export async function POST(req: Request) {

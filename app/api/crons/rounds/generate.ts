@@ -1,20 +1,18 @@
 import path from "path";
 import { writeFileSync } from "fs";
 
-import { players } from "@/app/data/dummy";
-import { Match, MATCH_TYPE, Player, Round, Team } from "@/types";
-import { uuid, setDocument, getDocuments, getDocument } from "@/db";
 import { teams } from "@/app/data/dummy";
-
-// Define constants for collections
-const COLLECTIONS = {
-  PLAYERS: "PLAYERS",
-  TEAMS: "TEAMS",
-  MATCHES: "MATCHES",
-  ROUNDS: "ROUNDS",
-  LADDERS: "LADDERS",
-  INVITATIONS: "LADDERS",
-};
+import {
+  Match,
+  MATCH_TYPE,
+  Player,
+  Round,
+  Team,
+  INVITATION_STATUS,
+  Invitation,
+  COLLECTIONS,
+} from "@/types";
+import { uuid, setDocument, getDocuments, getDocument } from "@/db";
 
 // Function to create a round with matches based on participants
 const createRound = async (
@@ -73,7 +71,7 @@ const createRound = async (
       type: matchType,
       participant1_ID: lowestRankedId,
       participant2_ID: "BYE", // Special ID for a bye
-      reporter: 1,
+      reporterId: "1", // Changed from number to string per Match type
       score: "",
       date: new Date(startDate + Math.random() * (endDate - startDate)),
       isBye: true,
@@ -96,7 +94,7 @@ const createRound = async (
         type: matchType,
         participant1_ID: participantIds[i],
         participant2_ID: participantIds[i + 1],
-        reporter: 1, // Default reporter, could be updated later
+        reporterId: "1", // Changed from number to string per Match type
         score: "", // Empty score at creation
         date: new Date(startDate + Math.random() * (endDate - startDate)), // Random date within the round period
       };
@@ -158,22 +156,28 @@ const getFirstRound = async (
 
   const matches: Match[] = [];
   const matchIds: string[] = [];
+  const roundId = uuid(); // Added missing round ID
 
   if (randomizedParticipants.length % 2 !== 0) {
     const byeParticipant = randomizedParticipants.pop();
-    matches.push({
-      id: uuid(),
+    const byeMatchId = uuid();
+    const byeMatch: Match = {
+      id: byeMatchId,
       type: matchType,
       participant1_ID: byeParticipant?.id!,
-      participant2_ID: MATCH_TYPE.BYE, // Special ID for a bye
-      reporter: 1,
+      participant2_ID: "BYE", // Changed to string from enum
+      reporterId: "1", // Changed from number to string per Match type
       score: "",
       date: new Date(startDate + Math.random() * (endDate - startDate)),
       isBye: true,
-    });
-  }
+    };
 
-  // old
+    // Save the bye match to Firebase
+    await setDocument<Match>(COLLECTIONS.MATCHES, byeMatch);
+
+    matches.push(byeMatch);
+    matchIds.push(byeMatchId);
+  }
 
   let participantIds = randomizedParticipants.map((p) => p.id);
 
@@ -186,7 +190,7 @@ const getFirstRound = async (
         type: matchType,
         participant1_ID: participantIds[i],
         participant2_ID: participantIds[i + 1],
-        reporter: 1, // Default reporter, could be updated later
+        reporterId: "1", // Changed from number to string per Match type
         score: "", // Empty score at creation
         date: new Date(startDate + Math.random() * (endDate - startDate)), // Random date within the round period
       };
@@ -202,13 +206,20 @@ const getFirstRound = async (
   // Create the initial ranking based on the random order
   const ranking = [...participantIds];
 
-  return {
+  // Create the round object with ID
+  const round: Round = {
+    id: roundId,
     startDate,
     endDate,
     matchType,
     ranking,
     matchIds,
   };
+
+  // Save the round to Firebase
+  await setDocument<Round>(COLLECTIONS.ROUNDS, round);
+
+  return round;
 };
 
 // Function to schedule rounds for the next period (e.g., a season)
@@ -274,15 +285,15 @@ export const createAndSaveRound = async () => {
 
       // Create the next round using the previous round's information
       let playersList = await getDocuments<Player>(COLLECTIONS.PLAYERS);
-      if (playersList.length === 0) {
-        // Save imported players to database if none exist
-        for (const player of players) {
-          await setDocument<Player>(COLLECTIONS.PLAYERS, player);
-        }
-        playersList = players;
-      }
+      // if (playersList.length === 0) {
+      //   // Save imported players to database if none exist
+      //   for (const player of teams) {
+      //     await setDocument<Player>(COLLECTIONS.PLAYERS, player);
+      //   }
+      //   playersList = teams;
+      // }
 
-      return await createRound(MATCH_TYPE.SINGLES, playersList, previousRound);
+      // return await createRound(MATCH_TYPE.SINGLES, playersList, previousRound);
     } else {
       // No previous rounds, create the first round
       console.log("No previous rounds found. Creating first round.");
@@ -296,12 +307,12 @@ export const createAndSaveRound = async () => {
           "No players found in database. Using imported player data..."
         );
 
-        // Save imported players to database
-        for (const player of players) {
-          await setDocument<Player>(COLLECTIONS.PLAYERS, player);
-        }
+        // // Save imported players to database
+        // for (const player of teams) {
+        //   await setDocument<Player>(COLLECTIONS.PLAYERS, player);
+        // }
 
-        playersList = players;
+        // playersList = teams;
       }
 
       console.log(
@@ -318,22 +329,21 @@ export const createAndSaveRound = async () => {
 };
 
 const start = async () => {
-  const firstRound = await getFirstRound(MATCH_TYPE.DOUBLES, teams);
-  console.log(firstRound);
-  writeFileSync(
-    path.join("/Users/oscarvanvelsen/Desktop/Dev/JSON/firstRound.json"),
-    JSON.stringify(firstRound),
-    "utf-8"
-  );
-  console.log(
-    "wrote to /Users/oscarvanvelsen/Desktop/Dev/JSON/firstRound.json"
-  );
-
-  // Save the round to Firebase
-  await setDocument<Round>(COLLECTIONS.ROUNDS, firstRound);
+  // const firstRound = await getFirstRound(MATCH_TYPE.DOUBLES, teams);
+  // console.log(firstRound);
+  // writeFileSync(
+  //   path.join("/Users/oscarvanvelsen/Desktop/Dev/JSON/firstRound.json"),
+  //   JSON.stringify(firstRound),
+  //   "utf-8"
+  // );
+  // console.log(
+  //   "wrote to /Users/oscarvanvelsen/Desktop/Dev/JSON/firstRound.json"
+  // );
+  // // Save the round to Firebase
+  // await setDocument<Round>(COLLECTIONS.ROUNDS, firstRound);
 };
 
 // start();
 
 // Export functions for use in other files
-export { createRound, getFirstRound, scheduleSeason, COLLECTIONS };
+export { createRound, getFirstRound, scheduleSeason };

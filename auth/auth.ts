@@ -8,8 +8,7 @@ import {
 import { auth, db } from "@/db";
 import { doc, getDoc } from "firebase/firestore";
 import type { DefaultSession } from "next-auth";
-import type { Player } from "@/types";
-import { COLLECTIONS } from "@/app/api/crons/rounds/route";
+import { COLLECTIONS, type Player } from "@/types";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -106,6 +105,7 @@ export const {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        // @ts-ignore
         token.emailVerified = user.emailVerified;
         token.picture = user.image || null;
       }
@@ -118,6 +118,7 @@ export const {
         session.user.name = token.name as string;
         session.user.email = token.email as string;
         session.user.age = token.age as number;
+        // @ts-ignore
         session.user.emailVerified = token.emailVerified as boolean;
         session.user.image = (token.picture as string) || null;
       }

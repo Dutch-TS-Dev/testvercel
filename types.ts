@@ -2,6 +2,8 @@ export enum COLLECTIONS {
   PLAYERS = "PLAYERS",
   INVITATIONS = "INVITATIONS",
   TEAMS = "TEAMS",
+  MATCHES = "MATCHES",
+  ROUNDS = "ROUNDS",
 }
 
 export type Player = {
