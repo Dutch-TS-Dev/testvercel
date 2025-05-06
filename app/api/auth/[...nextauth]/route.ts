@@ -1,3 +1,3 @@
-// route.ts
+import { handlers } from "@/auth/auth";
 
-export { handlers as GET, handlers as POST } from "@/auth/auth";
+export const { GET, POST } = handlers;
