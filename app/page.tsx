@@ -14,6 +14,7 @@ import { currentViewAtom, ViewType } from "@/app/viewAtoms";
 import RoundsViewer from "./components/Viewer";
 import { ScrollToBottomArrow } from "./components/ScrollDown";
 import Join from "./components/JoinLeague";
+import Info from "./components/Info";
 
 // Define types
 interface DatetimeState {
@@ -188,7 +189,7 @@ const Home = () => {
                 </>
               ) : (
                 <div className="small-info-text mb-4">
-                  Welcome to Pickleball!
+                  Welcome to Leaqx!
                   <br /> You need to Login or Register.
                 </div>
               )}
@@ -259,13 +260,14 @@ const Home = () => {
                 <span className="ion-ios-gear-outline"></span> Settings
               </a>
               <a
-                href="#credits"
+                href="#information"
                 onClick={(e) => {
                   e.preventDefault();
-                  handleSideNavClick("credits", "Credits");
+                  handleSideNavClick("information", "Information");
                 }}
               >
-                <span className="ion-ios-information-outline"></span> Credits
+                <span className="ion-ios-information-outline"></span>{" "}
+                Information
               </a>
               {/* <a
                 href="#login"
@@ -292,7 +294,7 @@ const Home = () => {
                   handleSideNavClick("login", "Login");
                 }}
               >
-                <span className="ion-ios-user-outline"></span> Credits
+                <span className="ion-ios-user-outline"></span> information
               </a>
               {/* <Link href="/register">
                 <span className="ion-ios-information-outline"></span> Register
@@ -595,73 +597,11 @@ const Home = () => {
             </div>
           </div>
           <div
-            className={`html credits ${
-              activeHtml === "credits" ? "visible" : ""
+            className={`html information ${
+              activeHtml === "information" ? "visible" : ""
             }`}
           >
-            <div className="title flipInY animated">
-              I have been using the following assets to build this design
-            </div>
-            <div className="credit-ol">
-              <div className="credit-li lightSpeedIn animated">
-                <a
-                  href="https://www.google.com/fonts/specimen/Roboto"
-                  target="_blank"
-                >
-                  roboto
-                </a>
-                <span>for typography</span>
-              </div>
-              <div className="credit-li lightSpeedIn animated">
-                <a href="https://jquery.com" target="_blank">
-                  jquery
-                </a>
-                <span>for design/ui</span>
-              </div>
-              <div className="credit-li lightSpeedIn animated">
-                <a href="http://ionicons.com/" target="_blank">
-                  ionicons
-                </a>
-                <span>for icons</span>
-              </div>
-              <div className="credit-li lightSpeedIn animated">
-                <a href="http://uifaces.com/authorized" target="_blank">
-                  ui faces
-                </a>
-                <span>for avatar</span>
-              </div>
-              <div className="credit-li lightSpeedIn animated">
-                <a
-                  href="https://daneden.github.io/animate.css/"
-                  target="_blank"
-                >
-                  animate.css
-                </a>
-                <span>for animation</span>
-              </div>
-              <div className="credit-li lightSpeedIn animated">
-                <a
-                  href="https://dribbble.com/shots/1928064-Secret-Project"
-                  target="_blank"
-                >
-                  concept of design
-                </a>
-                <span>for layout</span>
-              </div>
-              <div className="credit-li lightSpeedIn animated">
-                <a
-                  href="https://unsplash.com/photos/6asyCyR0K1Q/download"
-                  target="_blank"
-                >
-                  unsplash.com
-                </a>
-                <span>for background</span>
-              </div>
-            </div>
-            <div className="text zoomInUp animated">
-              I'm glad for using these resources and expecting same as time
-              ahead
-            </div>
+            <Info activeHtml />
           </div>
         </div>
         {/* <div className={`nav ${navActive ? "active" : ""}`}>

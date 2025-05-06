@@ -75,6 +75,7 @@ const Join: React.FC<JoinPageProps> = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<JoinFormInputs>({
     defaultValues: {
       teamName: "",
@@ -88,6 +89,13 @@ const Join: React.FC<JoinPageProps> = () => {
       checkExistingInvitations();
     }
   }, [user]);
+
+  // Update the form when team name is set
+  useEffect(() => {
+    if (teamName) {
+      setValue("teamName", teamName);
+    }
+  }, [teamName, setValue]);
 
   const checkExistingInvitations = async () => {
     setIsLoading(true);
@@ -132,10 +140,10 @@ const Join: React.FC<JoinPageProps> = () => {
 
         // Set team name if available
         if (mostRecentInvitation.teamName) {
-          console.log("mostRecentInvitation");
-          console.log(mostRecentInvitation);
-          console.log("");
-
+          console.log(
+            "Team name from inviter invitation:",
+            mostRecentInvitation.teamName
+          );
           setTeamName(mostRecentInvitation.teamName);
         }
 
@@ -176,6 +184,10 @@ const Join: React.FC<JoinPageProps> = () => {
 
         // Set team name if available
         if (mostRecentPartnerInvitation.teamName) {
+          console.log(
+            "Team name from partner invitation:",
+            mostRecentPartnerInvitation.teamName
+          );
           setTeamName(mostRecentPartnerInvitation.teamName);
         }
 
@@ -200,6 +212,7 @@ const Join: React.FC<JoinPageProps> = () => {
         // No invitations found
         setOverRulingStatus(undefined);
         setInvitationStatus(undefined);
+        setTeamName("");
       }
     } catch (error) {
       console.error("Error checking existing invitations:", error);
@@ -298,8 +311,9 @@ const Join: React.FC<JoinPageProps> = () => {
         return (
           <div className="invitation-status pending flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
-              * You have already sent an invitation. As soon as they accept it
-              your team will be added to the ladder
+              * You have already sent an invitation for team "
+              <strong>{teamName}</strong>". As soon as {partnerName} accepts it,
+              your team will be added to the ladder.
             </p>
           </div>
         );
@@ -308,7 +322,8 @@ const Join: React.FC<JoinPageProps> = () => {
           <div className="invitation-status pending flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
               You have received a team invitation from {partnerName} for team "
-              {teamName}". Please check your notifications to accept or decline.
+              <strong>{teamName}</strong>". Please check your notifications to
+              accept or decline.
             </p>
             <div className="action flipInY animated">
               <button className="btn" onClick={navigateToHome}>
@@ -321,8 +336,8 @@ const Join: React.FC<JoinPageProps> = () => {
         return (
           <div className="invitation-status accepted flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
-              Welcome aboard! Your teammember has accepted your invite and *
-              {teamName}* is ready to compete
+              Welcome aboard! Your teammember has accepted your invite and
+              <strong> {teamName} </strong> is ready to compete!
             </p>
             <p className="text-center">
               You will receive match information as soon as possible.
@@ -344,8 +359,8 @@ const Join: React.FC<JoinPageProps> = () => {
         return (
           <div className="invitation-status rejected flipInX animated mt-[30px] small-info-text">
             <p className="text-center">
-              Your partner has rejected the invitation. You can look for a new
-              partner.
+              Your invitation for team "<strong>{teamName}</strong>" has been
+              rejected by your partner. You can look for a new partner.
             </p>
             <div className="action flipInY animated">
               <button
@@ -597,14 +612,19 @@ const Join: React.FC<JoinPageProps> = () => {
           <div className="title bounceInDown animated">Invitation Sent</div>
           <div className="confirmation-content flipInX animated">
             <p>
-              Good news! The invitation has been sent to your partner's email
-              address.
+              Good news! The invitation for team "<strong>{teamName}</strong>"
+              has been sent to {partnerName}'s email address.
             </p>
             <p>
               As soon as your teammate accepts the invitation, both of you will
               receive a confirmation email. If they decline, you'll be notified
               so you can invite someone else.
             </p>
+            {/* <div className="action flipInY animated">
+              <button className="btn" onClick={navigateToHome}>
+                Return to Home
+              </button>
+            </div> */}
           </div>
         </div>
       )}
