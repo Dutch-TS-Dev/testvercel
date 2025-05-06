@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { userAtom } from "./useAtoms";
 import LadderRow from "./components/ladderRow";
-import Join from "./components/Join";
+
 import { teams } from "./data/dummy";
 import Auth from "./components/Auth";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +13,7 @@ import { toast } from "react-hot-toast";
 import { currentViewAtom, ViewType } from "@/app/viewAtoms";
 import RoundsViewer from "./components/Viewer";
 import { ScrollToBottomArrow } from "./components/ScrollDown";
+import Join from "./components/Join";
 
 // Define types
 interface DatetimeState {
