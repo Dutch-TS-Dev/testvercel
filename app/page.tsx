@@ -13,7 +13,7 @@ import { toast } from "react-hot-toast";
 import { currentViewAtom, ViewType } from "@/app/viewAtoms";
 import RoundsViewer from "./components/Viewer";
 import { ScrollToBottomArrow } from "./components/ScrollDown";
-import Join from "./components/Join";
+import Join from "./components/JoinLeague";
 
 // Define types
 interface DatetimeState {
