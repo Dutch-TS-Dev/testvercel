@@ -40,9 +40,6 @@ export default function Info({ activeHtml }) {
     // Outer container for the Info component with scrollable area
     <div className="h-full overflow-y-auto pb-8">
       <div className="tabs-list clearfix">
-        <a href="#" className="tab active">
-          Teams
-        </a>
         <div className="title flipInY animated">Pickleball League Rules</div>
 
         {/* Expand All Button */}
