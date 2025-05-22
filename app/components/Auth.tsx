@@ -106,7 +106,6 @@ const Auth = () => {
       } else if (isLogin) {
         // Login process using NextAuth
         const result = await login(data.email, data.password);
-        debugger;
 
         // @ts-ignore
         if (result && !result.error) {

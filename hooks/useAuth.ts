@@ -98,6 +98,7 @@ export const useAuth = () => {
   const login = async (email: string, password: string) => {
     setLoading(true);
     setError("");
+
     try {
       // Use NextAuth to sign in
       const result = await nextAuthSignIn("firebase-credentials", {
