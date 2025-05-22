@@ -15,6 +15,6 @@ jobs:
       - name: Run ChatGPT Code Review
         uses: anc95/ChatGPT-CodeReview@v1.0.21
         with:
-          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          openai_api_key: ${{ env.GITHUB_TOKEN }}
           language: javascript
           review_comment_lgtm: false
