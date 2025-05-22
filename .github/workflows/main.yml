@@ -1,18 +1,20 @@
-- name: ChatGPT CodeReviewer
+name: ChatGPT CodeReviewer
 
-  on:
-    push:
-      branches:
-        - main
+on:
+  push:
+    branches:
+      - main
 
-  jobs:
-    review:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - uses: anc95/ChatGPT-CodeReview@v1.0.21
-          with:
-            openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-            language: javascript
-            review_comment_lgtm: false
+      - name: Run ChatGPT Code Review
+        uses: anc95/ChatGPT-CodeReview@v1.0.21
+        with:
+          openai_api_key: ${{ secrets.OPENAI_API_KEY }}
+          language: javascript
+          review_comment_lgtm: false
