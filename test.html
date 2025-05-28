@@ -1,0 +1,33 @@
+<div class="foobar-element"></div>
+
+<script>
+  // Every second, this function sets a new random width and height onto the given element
+  // and log the new dimensions to the console.
+  const foobar = setAndLogRandomDimensions("div.foobar-element");
+
+  setInterval(foobar.run, 1000);
+
+  function randomIntBetween(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+
+  function setAndLogRandomDimensions(selector) {
+    const element = document.querySelector(selector);
+
+    return {
+      run: () => {
+        element.style.height = randomIntBetween(1, 1000);
+        element.style.width = randomIntBetween(1, 1000);
+        element.classList.add("new-dimensions-applied");
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            let { height, width } = element.getBoundingClientRect();
+
+            console.log(`${height}x${width}`);
+          });
+        });
+      },
+    };
+  }
+</script>
