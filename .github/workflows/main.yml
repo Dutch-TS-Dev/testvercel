@@ -18,3 +18,5 @@ jobs:
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           language: javascript
           review_comment_lgtm: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
